@@ -15,21 +15,23 @@ class HomeView extends GetView<HomeController> {
       appBar: AppBar(
         title: Text(Tr.homeTitle),
         actions: [
-          // Language Switcher
           PopupMenuButton<String>(
             icon: const Icon(Icons.language),
             onSelected: (String languageCode) {
               JsonTranslationService.to.changeLanguage(languageCode);
             },
             itemBuilder: (BuildContext context) {
-              return JsonTranslationService.to.availableLanguages.map((language) {
+              return JsonTranslationService.to.availableLanguages.map((
+                language,
+              ) {
                 return PopupMenuItem<String>(
                   value: language['code']!,
                   child: Row(
                     children: [
                       Text(language['nativeName']!),
                       const SizedBox(width: AppConstants.smallPadding),
-                      if (JsonTranslationService.to.currentLanguage == language['code'])
+                      if (JsonTranslationService.to.currentLanguage ==
+                          language['code'])
                         const Icon(Icons.check, color: AppColors.primary),
                     ],
                   ),
@@ -45,11 +47,9 @@ class HomeView extends GetView<HomeController> {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
-        
+
         return RefreshIndicator(
           onRefresh: controller.refreshData,
           child: SingleChildScrollView(
@@ -67,17 +67,19 @@ class HomeView extends GetView<HomeController> {
                       children: [
                         Row(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.water_drop,
                               color: AppColors.waterBlue,
                               size: AppConstants.largeIconSize,
                             ),
                             const SizedBox(width: AppConstants.defaultPadding),
                             Expanded(
-                              child:                         Text(
-                          Tr.welcomeMessage,
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
+                              child: Text(
+                                Tr.welcomeMessage,
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.headlineSmall,
+                              ),
                             ),
                           ],
                         ),
@@ -90,10 +92,9 @@ class HomeView extends GetView<HomeController> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: AppConstants.largePadding),
-                
-                // Counter Section
+
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(AppConstants.defaultPadding),
@@ -106,13 +107,16 @@ class HomeView extends GetView<HomeController> {
                         ),
                         const SizedBox(height: AppConstants.defaultPadding),
                         Center(
-                          child: Obx(() => Text(
-                            '${controller.counter.value}',
-                            style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
+                          child: Obx(
+                            () => Text(
+                              '${controller.counter.value}',
+                              style: Theme.of(context).textTheme.displayLarge
+                                  ?.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                             ),
-                          )),
+                          ),
                         ),
                         const SizedBox(height: AppConstants.largePadding),
                         Row(
@@ -145,10 +149,9 @@ class HomeView extends GetView<HomeController> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: AppConstants.largePadding),
-                
-                // Features Section
+
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(AppConstants.defaultPadding),
@@ -205,7 +208,7 @@ class HomeView extends GetView<HomeController> {
       ),
     );
   }
-  
+
   Widget _buildFeatureItem(
     BuildContext context,
     IconData icon,
@@ -233,10 +236,7 @@ class HomeView extends GetView<HomeController> {
                   ),
                 ),
                 const SizedBox(height: AppConstants.smallPadding),
-                Text(
-                  description,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+                Text(description, style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
           ),

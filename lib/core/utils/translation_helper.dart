@@ -6,12 +6,11 @@ class T {
     try {
       return JsonTranslationService.to.getTranslation(key);
     } catch (e) {
-      return key; // Return key if translation not found
+      return key;
     }
   }
 }
 
-// Helper class for translation keys
 class Tr {
   static String get appName => T.get(TranslationKeys.appName);
   static String get appVersion => T.get(TranslationKeys.appVersion);

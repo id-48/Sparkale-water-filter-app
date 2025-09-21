@@ -20,14 +20,12 @@ class JsonTranslationService extends GetxService {
     _loadSavedLanguage();
   }
   
-  // Load saved language from preferences
   void _loadSavedLanguage() async {
     final savedLanguage = PreferenceUtils.getString(AppConstants.selectedLanguageKey, defaultValue: 'en');
     _currentLanguage.value = savedLanguage ?? 'en';
     await _loadTranslations(_currentLanguage.value);
   }
   
-  // Load translations from JSON file
   Future<void> _loadTranslations(String languageCode) async {
     try {
       final String jsonString = await rootBundle.loadString('assets/translations/$languageCode.json');
@@ -38,27 +36,19 @@ class JsonTranslationService extends GetxService {
         _translations[key] = value.toString();
       });
       
-      // Update GetX locale
       Get.updateLocale(Locale(languageCode));
     } catch (e) {
-      print('Error loading translations for $languageCode: $e');
-      // Fallback to English if current language fails
       if (languageCode != 'en') {
         await _loadTranslations('en');
       }
     }
   }
   
-  // Change language
   Future<void> changeLanguage(String languageCode) async {
     try {
       _currentLanguage.value = languageCode;
       await _loadTranslations(languageCode);
-      
-      // Save language preference
       await PreferenceUtils.setString(AppConstants.selectedLanguageKey, languageCode);
-      
-      // Show success message
       Get.snackbar(
         getTranslation('success'),
         getTranslation('languageChanged'),
@@ -74,12 +64,10 @@ class JsonTranslationService extends GetxService {
     }
   }
   
-  // Get translation by key
   String getTranslation(String key) {
     return _translations[key] ?? key;
   }
   
-  // Get available languages
   List<Map<String, String>> get availableLanguages => [
     {
       'code': 'en',
@@ -93,10 +81,8 @@ class JsonTranslationService extends GetxService {
     },
   ];
   
-  // Check if current language is RTL
   bool get isRTL => _currentLanguage.value == 'ar' || _currentLanguage.value == 'he';
   
-  // Get language name by code
   String getLanguageName(String code) {
     final language = availableLanguages.firstWhereOrNull(
       (lang) => lang['code'] == code,

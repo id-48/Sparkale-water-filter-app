@@ -4,7 +4,6 @@ import '../../../../core/utils/logger.dart';
 
 class HomeController extends GetxController {
   
-  // Observable variables
   final RxBool isLoading = false.obs;
   final RxInt counter = 0.obs;
   
@@ -18,10 +17,7 @@ class HomeController extends GetxController {
     try {
       isLoading.value = true;
       Logger.user('Home screen initialized');
-      
-      // Load initial data
       await _loadInitialData();
-      
     } catch (e) {
       Logger.e('Error initializing home', error: e);
       Get.snackbar(
@@ -36,7 +32,6 @@ class HomeController extends GetxController {
   
   Future<void> _loadInitialData() async {
     try {
-      // Load initial data from local storage or other sources
       Logger.user('Initial data loaded');
     } catch (e) {
       Logger.e('Error loading initial data', error: e);

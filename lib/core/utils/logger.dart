@@ -3,54 +3,46 @@ import 'package:flutter/foundation.dart';
 
 class Logger {
   static const String _tag = 'SparkaleApp';
-  
-  // Debug log
   static void d(String message, {String? tag}) {
     if (kDebugMode) {
       developer.log(
         message,
         name: tag ?? _tag,
-        level: 500, // Debug level
+        level: 500,
       );
     }
   }
-  
-  // Info log
   static void i(String message, {String? tag}) {
     if (kDebugMode) {
       developer.log(
         message,
         name: tag ?? _tag,
-        level: 800, // Info level
+        level: 800,
       );
     }
   }
-  
-  // Warning log
   static void w(String message, {String? tag}) {
     if (kDebugMode) {
       developer.log(
         message,
         name: tag ?? _tag,
-        level: 900, // Warning level
+        level: 900,
       );
     }
   }
   
-  // Error log
   static void e(String message, {String? tag, Object? error, StackTrace? stackTrace}) {
     if (kDebugMode) {
       developer.log(
         message,
         name: tag ?? _tag,
-        level: 1000, // Error level
+        level: 1000,
         error: error,
         stackTrace: stackTrace,
       );
     }
   }
   
-  // API log
   static void api(String message, {String? endpoint, Map<String, dynamic>? data}) {
     if (kDebugMode) {
       developer.log(
@@ -60,8 +52,6 @@ class Logger {
       );
     }
   }
-  
-  // Network log
   static void network(String message, {String? url, int? statusCode}) {
     if (kDebugMode) {
       developer.log(
@@ -72,7 +62,6 @@ class Logger {
     }
   }
   
-  // Database log
   static void db(String message, {String? table, String? operation}) {
     if (kDebugMode) {
       developer.log(
@@ -83,7 +72,6 @@ class Logger {
     }
   }
   
-  // User action log
   static void user(String message, {String? screen, String? action}) {
     if (kDebugMode) {
       developer.log(

@@ -3,12 +3,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 class PreferenceUtils {
   static SharedPreferences? _prefs;
   
-  // Initialize SharedPreferences
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
   }
   
-  // Get SharedPreferences instance
   static SharedPreferences get prefs {
     if (_prefs == null) {
       throw Exception('PreferenceUtils not initialized. Call init() first.');
@@ -16,7 +14,6 @@ class PreferenceUtils {
     return _prefs!;
   }
   
-  // String operations
   static Future<bool> setString(String key, String value) async {
     return await prefs.setString(key, value);
   }
@@ -25,7 +22,6 @@ class PreferenceUtils {
     return prefs.getString(key) ?? defaultValue;
   }
   
-  // Int operations
   static Future<bool> setInt(String key, int value) async {
     return await prefs.setInt(key, value);
   }
@@ -34,7 +30,6 @@ class PreferenceUtils {
     return prefs.getInt(key) ?? defaultValue;
   }
   
-  // Bool operations
   static Future<bool> setBool(String key, bool value) async {
     return await prefs.setBool(key, value);
   }
@@ -42,8 +37,7 @@ class PreferenceUtils {
   static bool? getBool(String key, {bool? defaultValue}) {
     return prefs.getBool(key) ?? defaultValue;
   }
-  
-  // Double operations
+
   static Future<bool> setDouble(String key, double value) async {
     return await prefs.setDouble(key, value);
   }
@@ -51,8 +45,7 @@ class PreferenceUtils {
   static double? getDouble(String key, {double? defaultValue}) {
     return prefs.getDouble(key) ?? defaultValue;
   }
-  
-  // List operations
+
   static Future<bool> setStringList(String key, List<String> value) async {
     return await prefs.setStringList(key, value);
   }
@@ -60,8 +53,7 @@ class PreferenceUtils {
   static List<String>? getStringList(String key, {List<String>? defaultValue}) {
     return prefs.getStringList(key) ?? defaultValue;
   }
-  
-  // Remove operations
+
   static Future<bool> remove(String key) async {
     return await prefs.remove(key);
   }
@@ -70,17 +62,14 @@ class PreferenceUtils {
     return await prefs.clear();
   }
   
-  // Check if key exists
   static bool containsKey(String key) {
     return prefs.containsKey(key);
   }
   
-  // Get all keys
   static Set<String> getKeys() {
     return prefs.getKeys();
   }
   
-  // User specific operations
   static Future<bool> setUserToken(String token) async {
     return await setString('user_token', token);
   }
@@ -120,8 +109,7 @@ class PreferenceUtils {
   static String getTheme() {
     return getString('theme', defaultValue: 'light') ?? 'light';
   }
-  
-  // Clear user data
+
   static Future<bool> clearUserData() async {
     await remove('user_token');
     await remove('user_data');

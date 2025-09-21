@@ -1,5 +1,4 @@
 class Validators {
-  // Email validation
   static String? validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return 'Email is required';
@@ -13,7 +12,6 @@ class Validators {
     return null;
   }
   
-  // Password validation
   static String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'Password is required';
@@ -30,7 +28,6 @@ class Validators {
     return null;
   }
   
-  // Confirm password validation
   static String? validateConfirmPassword(String? value, String? password) {
     if (value == null || value.isEmpty) {
       return 'Please confirm your password';
@@ -43,7 +40,6 @@ class Validators {
     return null;
   }
   
-  // Phone number validation
   static String? validatePhone(String? value) {
     if (value == null || value.isEmpty) {
       return 'Phone number is required';
@@ -57,7 +53,6 @@ class Validators {
     return null;
   }
   
-  // Name validation
   static String? validateName(String? value) {
     if (value == null || value.isEmpty) {
       return 'Name is required';
@@ -74,7 +69,6 @@ class Validators {
     return null;
   }
   
-  // Required field validation
   static String? validateRequired(String? value, String fieldName) {
     if (value == null || value.isEmpty) {
       return '$fieldName is required';
@@ -82,7 +76,6 @@ class Validators {
     return null;
   }
   
-  // Number validation
   static String? validateNumber(String? value, {String? fieldName}) {
     if (value == null || value.isEmpty) {
       return '${fieldName ?? 'Number'} is required';
@@ -95,7 +88,6 @@ class Validators {
     return null;
   }
   
-  // Positive number validation
   static String? validatePositiveNumber(String? value, {String? fieldName}) {
     final numberValidation = validateNumber(value, fieldName: fieldName);
     if (numberValidation != null) return numberValidation;
@@ -107,7 +99,6 @@ class Validators {
     return null;
   }
   
-  // URL validation
   static String? validateUrl(String? value) {
     if (value == null || value.isEmpty) {
       return 'URL is required';
@@ -124,7 +115,6 @@ class Validators {
     return null;
   }
   
-  // OTP validation
   static String? validateOTP(String? value) {
     if (value == null || value.isEmpty) {
       return 'OTP is required';

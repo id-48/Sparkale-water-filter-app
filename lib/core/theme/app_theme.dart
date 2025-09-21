@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_constants.dart';
 
 class AppTheme {
-  // Light Theme
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      
-      // Color Scheme
       colorScheme: const ColorScheme.light(
         primary: AppColors.primary,
         onPrimary: AppColors.white,
@@ -25,25 +23,21 @@ class AppTheme {
         background: AppColors.background,
         onBackground: AppColors.textPrimary,
       ),
-      
-      // App Bar Theme
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: TextStyle(
+        titleTextStyle: GoogleFonts.inter(
           color: AppColors.white,
           fontSize: AppConstants.largeFontSize,
           fontWeight: FontWeight.w600,
         ),
-        systemOverlayStyle: SystemUiOverlayStyle(
+        systemOverlayStyle: const SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.light,
         ),
       ),
-      
-      // Card Theme
       cardTheme: CardThemeData(
         color: AppColors.cardBackground,
         elevation: 2,
@@ -52,8 +46,6 @@ class AppTheme {
         ),
         margin: const EdgeInsets.all(AppConstants.smallPadding),
       ),
-      
-      // Elevated Button Theme
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
@@ -66,14 +58,12 @@ class AppTheme {
             horizontal: AppConstants.largePadding,
             vertical: AppConstants.defaultPadding,
           ),
-          textStyle: const TextStyle(
+          textStyle: GoogleFonts.inter(
             fontSize: AppConstants.mediumFontSize,
             fontWeight: FontWeight.w600,
           ),
         ),
       ),
-      
-      // Text Button Theme
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.primary,
@@ -86,8 +76,6 @@ class AppTheme {
           ),
         ),
       ),
-      
-      // Outlined Button Theme
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
@@ -101,8 +89,6 @@ class AppTheme {
           ),
         ),
       ),
-      
-      // Input Decoration Theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.greyLight,
@@ -130,105 +116,97 @@ class AppTheme {
           horizontal: AppConstants.defaultPadding,
           vertical: AppConstants.defaultPadding,
         ),
-        hintStyle: const TextStyle(
+        hintStyle: GoogleFonts.inter(
           color: AppColors.textHint,
           fontSize: AppConstants.defaultFontSize,
         ),
-        labelStyle: const TextStyle(
+        labelStyle: GoogleFonts.inter(
           color: AppColors.textSecondary,
           fontSize: AppConstants.defaultFontSize,
         ),
       ),
-      
-      // Text Theme
-      textTheme: const TextTheme(
-        displayLarge: TextStyle(
+      textTheme: GoogleFonts.interTextTheme().copyWith(
+        displayLarge: GoogleFonts.inter(
           color: AppColors.textPrimary,
           fontSize: AppConstants.titleFontSize,
           fontWeight: FontWeight.bold,
         ),
-        displayMedium: TextStyle(
+        displayMedium: GoogleFonts.inter(
           color: AppColors.textPrimary,
           fontSize: AppConstants.extraLargeFontSize,
           fontWeight: FontWeight.bold,
         ),
-        displaySmall: TextStyle(
+        displaySmall: GoogleFonts.inter(
           color: AppColors.textPrimary,
           fontSize: AppConstants.largeFontSize,
           fontWeight: FontWeight.w600,
         ),
-        headlineLarge: TextStyle(
+        headlineLarge: GoogleFonts.inter(
           color: AppColors.textPrimary,
           fontSize: AppConstants.largeFontSize,
           fontWeight: FontWeight.w600,
         ),
-        headlineMedium: TextStyle(
+        headlineMedium: GoogleFonts.inter(
           color: AppColors.textPrimary,
           fontSize: AppConstants.mediumFontSize,
           fontWeight: FontWeight.w600,
         ),
-        headlineSmall: TextStyle(
+        headlineSmall: GoogleFonts.inter(
           color: AppColors.textPrimary,
           fontSize: AppConstants.defaultFontSize,
           fontWeight: FontWeight.w600,
         ),
-        titleLarge: TextStyle(
+        titleLarge: GoogleFonts.inter(
           color: AppColors.textPrimary,
           fontSize: AppConstants.mediumFontSize,
           fontWeight: FontWeight.w500,
         ),
-        titleMedium: TextStyle(
+        titleMedium: GoogleFonts.inter(
           color: AppColors.textPrimary,
           fontSize: AppConstants.defaultFontSize,
           fontWeight: FontWeight.w500,
         ),
-        titleSmall: TextStyle(
+        titleSmall: GoogleFonts.inter(
           color: AppColors.textPrimary,
           fontSize: AppConstants.smallFontSize,
           fontWeight: FontWeight.w500,
         ),
-        bodyLarge: TextStyle(
+        bodyLarge: GoogleFonts.inter(
           color: AppColors.textPrimary,
           fontSize: AppConstants.mediumFontSize,
         ),
-        bodyMedium: TextStyle(
+        bodyMedium: GoogleFonts.inter(
           color: AppColors.textPrimary,
           fontSize: AppConstants.defaultFontSize,
         ),
-        bodySmall: TextStyle(
+        bodySmall: GoogleFonts.inter(
           color: AppColors.textSecondary,
           fontSize: AppConstants.smallFontSize,
         ),
-        labelLarge: TextStyle(
+        labelLarge: GoogleFonts.inter(
           color: AppColors.textPrimary,
           fontSize: AppConstants.defaultFontSize,
           fontWeight: FontWeight.w500,
         ),
-        labelMedium: TextStyle(
+        labelMedium: GoogleFonts.inter(
           color: AppColors.textSecondary,
           fontSize: AppConstants.smallFontSize,
           fontWeight: FontWeight.w500,
         ),
-        labelSmall: TextStyle(
+        labelSmall: GoogleFonts.inter(
           color: AppColors.textHint,
           fontSize: AppConstants.smallFontSize,
         ),
       ),
-      
-      // Icon Theme
       iconTheme: const IconThemeData(
         color: AppColors.textPrimary,
         size: AppConstants.defaultIconSize,
       ),
-      
-      // Divider Theme
       dividerTheme: const DividerThemeData(
         color: AppColors.border,
         thickness: 1,
         space: 1,
       ),
-      
-      // Bottom Navigation Bar Theme
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.white,
         selectedItemColor: AppColors.primary,
@@ -236,18 +214,14 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
         elevation: 8,
       ),
-      
-      // Floating Action Button Theme
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
         elevation: 4,
       ),
-      
-      // Snack Bar Theme
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.textPrimary,
-        contentTextStyle: const TextStyle(
+        contentTextStyle: GoogleFonts.inter(
           color: AppColors.white,
           fontSize: AppConstants.defaultFontSize,
         ),
@@ -259,13 +233,11 @@ class AppTheme {
     );
   }
   
-  // Dark Theme
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       
-      // Color Scheme
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primary,
         onPrimary: AppColors.white,
@@ -280,9 +252,6 @@ class AppTheme {
         background: Color(0xFF121212),
         onBackground: AppColors.white,
       ),
-      
-      // Similar theme configurations for dark mode...
-      // (Implementation would be similar to light theme but with dark colors)
     );
   }
 }

@@ -1,9 +1,8 @@
 class TranslationKeys {
-  // App Info
+
   static const String appName = 'appName';
   static const String appVersion = 'appVersion';
-  
-  // Common
+
   static const String loading = 'loading';
   static const String error = 'error';
   static const String success = 'success';
@@ -26,11 +25,9 @@ class TranslationKeys {
   static const String done = 'done';
   static const String close = 'close';
   
-  // Splash Screen
   static const String splashTitle = 'splashTitle';
   static const String splashSubtitle = 'splashSubtitle';
   
-  // Home Screen
   static const String homeTitle = 'homeTitle';
   static const String welcomeMessage = 'welcomeMessage';
   static const String counterDemo = 'counterDemo';
@@ -49,18 +46,15 @@ class TranslationKeys {
   static const String multiLanguage = 'multiLanguage';
   static const String multiLanguageDesc = 'multiLanguageDesc';
   
-  // Language Settings
   static const String language = 'language';
   static const String selectLanguage = 'selectLanguage';
   static const String english = 'english';
   static const String gujarati = 'gujarati';
   static const String languageChanged = 'languageChanged';
   
-  // Error Messages
   static const String unknownError = 'unknownError';
   static const String noDataFound = 'noDataFound';
   
-  // Storage Keys
   static const String userToken = 'userToken';
   static const String userData = 'userData';
   static const String isFirstTime = 'isFirstTime';
