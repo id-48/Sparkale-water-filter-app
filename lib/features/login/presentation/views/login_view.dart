@@ -149,7 +149,6 @@ class LoginView extends GetView<LoginController> {
       ],
     );
   }
-
   Widget _buildSendOtpButton() {
     return SizedBox(
       width: double.infinity,
