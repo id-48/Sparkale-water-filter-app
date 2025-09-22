@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.light,
       locale: const Locale('en', ''),
       fallbackLocale: const Locale('en', ''),
-      initialRoute: AppPages.splash,
+      initialRoute: AppPages.login,
       getPages: AppPages.routes,
       defaultTransition: Transition.cupertino,
       transitionDuration: const Duration(milliseconds: 300),

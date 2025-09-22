@@ -3,9 +3,12 @@ import '../features/splash/presentation/views/splash_view.dart';
 import '../features/splash/presentation/bindings/splash_binding.dart';
 import '../features/home/presentation/views/home_view.dart';
 import '../features/home/presentation/bindings/home_binding.dart';
+import '../features/login/presentation/views/login_view.dart';
+import '../features/login/presentation/bindings/login_binding.dart';
 
 class AppPages {
   static const String splash = '/splash';
+  static const String login = '/login';
   static const String home = '/home';
   
   static final List<GetPage> routes = [
@@ -13,6 +16,11 @@ class AppPages {
       name: splash,
       page: () => const SplashView(),
       binding: SplashBinding(),
+    ),
+    GetPage(
+      name: login,
+      page: () => const LoginView(),
+      binding: LoginBinding(),
     ),
     GetPage(
       name: home,
