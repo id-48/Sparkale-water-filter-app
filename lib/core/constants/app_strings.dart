@@ -25,7 +25,9 @@ class AppStrings {
   static const String loginTitle = 'Login To Your Account';
   static const String loginSubtitle = 'Welcome back! Please enter your details.';
   static const String email = 'Email';
+  static const String mono = 'Mobile Number';
   static const String useMobileNumber = 'Use Mobile Number';
+  static const String useEmail = 'Use Email';
   static const String enterEmail = 'Enter your email';
   static const String enterMobileNumber = 'Enter your mobile number';
   static const String sendOtp = 'Send OTP';
@@ -33,6 +35,21 @@ class AppStrings {
   static const String signInWithGoogle = 'Sign in with Google';
   static const String dontHaveAccount = "Don't have an account yet?";
   static const String signUp = 'Sign Up';
+  
+  // Registration Screen
+  static const String registerTitle = 'Set Up Your Profile';
+  static const String registerSubtitle = "This is where you'll tell us a bit about yourself. This information helps to login.";
+  static const String firstName = 'First name';
+  static const String lastName = 'Last Name';
+  static const String phoneNumber = 'Phone number';
+  static const String enterFirstName = 'Enter your first name';
+  static const String enterLastName = 'Enter your last name';
+  static const String enterPhoneNumber = '+1 (555) 000-0000';
+  static const String termsAndConditions = 'By providing my phone number, I hereby agree and accept the Terms of Service and Privacy Policy in use of the app';
+  static const String termsOfService = 'Terms of Service';
+  static const String privacyPolicy = 'Privacy Policy';
+  static const String alreadyHaveAccount = 'Already have an account yet? ';
+  static const String signIn = 'Sign In';
   
   // Login Validation Messages
   static const String pleaseEnterEmail = 'Please enter your email address';

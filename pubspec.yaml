@@ -19,6 +19,8 @@ dependencies:
   flutter_spinkit: ^5.2.2
   intl: ^0.19.0
   google_fonts: ^6.2.1
+  country_code_picker: ^3.0.0
+  otp_pin_field: ^1.4.1
 
 dev_dependencies:
   flutter_test:

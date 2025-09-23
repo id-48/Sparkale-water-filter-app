@@ -13,20 +13,18 @@ class LoginView extends GetView<LoginController> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.06,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(height: screenHeight * 0.04),
               _buildLogoSection(context),
-              SizedBox(height: screenHeight * 0.06),
+              SizedBox(height: screenHeight * 0.08),
               _buildLoginTitleSection(),
               SizedBox(height: screenHeight * 0.06),
               _buildEmailInputSection(),
@@ -66,7 +64,7 @@ class LoginView extends GetView<LoginController> {
           style: TextStyle(
             fontSize: AppConstants.titleFontSize,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: AppColors.textSecondary,
           ),
           textAlign: TextAlign.center,
         ),
@@ -74,7 +72,7 @@ class LoginView extends GetView<LoginController> {
         Text(
           AppStrings.loginSubtitle,
           style: TextStyle(
-            fontSize: AppConstants.mediumFontSize,
+            fontSize: AppConstants.defaultFontSize,
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w400,
           ),
@@ -91,64 +89,74 @@ class LoginView extends GetView<LoginController> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              AppStrings.email,
-              style: TextStyle(
-                fontSize: AppConstants.defaultFontSize,
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w400,
+            Obx(
+              () => Text(
+                controller.isEmailInput.value
+                    ? AppStrings.email
+                    : AppStrings.mono,
+                style: const TextStyle(
+                  fontSize: AppConstants.defaultFontSize,
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ),
             GestureDetector(
               onTap: controller.toggleInputType,
-              child: const Text(
-                AppStrings.useMobileNumber,
-                style: TextStyle(
-                  fontSize: AppConstants.defaultFontSize,
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w500,
+              child: Obx(
+                () => Text(
+                  controller.isEmailInput.value
+                      ? AppStrings.useMobileNumber
+                      : AppStrings.useEmail,
+                  style: const TextStyle(
+                    fontSize: AppConstants.defaultFontSize,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
           ],
         ),
         const SizedBox(height: AppConstants.smallPadding),
-        Obx(() => TextFormField(
-          controller: controller.emailController,
-          keyboardType: controller.isEmailInput.value 
-              ? TextInputType.emailAddress 
-              : TextInputType.phone,
-          decoration: InputDecoration(
-            hintText: controller.isEmailInput.value 
-                ? AppStrings.enterEmail 
-                : AppStrings.enterMobileNumber,
-            hintStyle: const TextStyle(
-              color: AppColors.textHint,
-              fontSize: AppConstants.defaultFontSize,
-            ),
-            filled: true,
-            fillColor: AppColors.white,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
-              borderSide: const BorderSide(color: AppColors.primary, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: AppConstants.defaultPadding,
-              vertical: AppConstants.defaultPadding,
+        Obx(
+          () => TextFormField(
+            controller: controller.emailController,
+            keyboardType: controller.isEmailInput.value
+                ? TextInputType.emailAddress
+                : TextInputType.phone,
+            decoration: InputDecoration(
+              hintText: controller.isEmailInput.value
+                  ? AppStrings.enterEmail
+                  : AppStrings.enterMobileNumber,
+              hintStyle: const TextStyle(
+                color: AppColors.textHint,
+                fontSize: AppConstants.defaultFontSize,
+              ),
+              filled: true,
+              fillColor: AppColors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 2,
+                ),
+              ),
             ),
           ),
-        )),
+        ),
       ],
     );
   }
+
   Widget _buildSendOtpButton() {
     return SizedBox(
       width: double.infinity,
@@ -180,13 +188,13 @@ class LoginView extends GetView<LoginController> {
         Expanded(
           child: Container(
             height: 1,
-            decoration: const BoxDecoration(
-              color: AppColors.border,
-            ),
+            decoration: const BoxDecoration(color: AppColors.border),
           ),
         ),
         const Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppConstants.defaultPadding,
+          ),
           child: Text(
             AppStrings.or,
             style: TextStyle(
@@ -199,9 +207,7 @@ class LoginView extends GetView<LoginController> {
         Expanded(
           child: Container(
             height: 1,
-            decoration: const BoxDecoration(
-              color: AppColors.border,
-            ),
+            decoration: const BoxDecoration(color: AppColors.border),
           ),
         ),
       ],
@@ -216,7 +222,7 @@ class LoginView extends GetView<LoginController> {
         onPressed: controller.signInWithGoogle,
         style: OutlinedButton.styleFrom(
           backgroundColor: AppColors.white,
-          foregroundColor: AppColors.textPrimary,
+          foregroundColor: AppColors.textSecondary,
           side: const BorderSide(color: AppColors.border),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
@@ -230,7 +236,9 @@ class LoginView extends GetView<LoginController> {
               height: 20,
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: NetworkImage('https://developers.google.com/identity/images/g-logo.png'),
+                  image: NetworkImage(
+                    'https://developers.google.com/identity/images/g-logo.png',
+                  ),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -241,7 +249,7 @@ class LoginView extends GetView<LoginController> {
               style: TextStyle(
                 fontSize: AppConstants.mediumFontSize,
                 fontWeight: FontWeight.w400,
-                color: AppColors.textPrimary,
+                color: AppColors.textSecondary,
               ),
             ),
           ],
@@ -259,7 +267,7 @@ class LoginView extends GetView<LoginController> {
           style: TextStyle(
             fontSize: AppConstants.defaultFontSize,
             color: AppColors.textSecondary,
-            fontWeight: FontWeight.w400
+            fontWeight: FontWeight.w400,
           ),
         ),
         const SizedBox(width: AppConstants.smallPadding),

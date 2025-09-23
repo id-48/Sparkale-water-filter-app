@@ -129,8 +129,7 @@ class LoginController extends GetxController {
   /// Navigate to sign up screen
   void navigateToSignUp() {
     Logger.d('Navigate to Sign Up');
-    // TODO: Navigate to sign up screen
-    // Get.toNamed(AppPages.signUp);
+    Get.toNamed('/register');
   }
   
   /// Show error snackbar
