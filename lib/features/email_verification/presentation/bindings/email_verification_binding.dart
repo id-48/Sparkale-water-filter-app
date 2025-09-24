@@ -6,6 +6,7 @@ class EmailVerificationBinding extends Bindings {
   void dependencies() {
     Get.lazyPut<EmailVerificationController>(
       () => EmailVerificationController(),
+      fenix: false,
     );
   }
 }

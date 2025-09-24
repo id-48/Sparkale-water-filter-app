@@ -25,9 +25,9 @@ class SplashController extends GetxController {
     final userToken = PreferenceUtils.getUserToken();
     
     if (isFirstTime || userToken == null) {
-      Get.offAllNamed(AppPages.home);
+      Get.offAllNamed(AppPages.login);
     } else {
-      Get.offAllNamed(AppPages.home);
+      Get.offAllNamed(AppPages.main);
     }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:country_code_picker/country_code_picker.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/logger.dart';
 
@@ -10,6 +11,7 @@ class LoginController extends GetxController {
   // Observable variables
   final RxBool isEmailInput = true.obs;
   final RxBool isLoading = false.obs;
+  final Rx<CountryCode> selectedCountry = CountryCode.fromCountryCode('IN').obs;
   
   @override
   void onInit() {
@@ -28,6 +30,12 @@ class LoginController extends GetxController {
     isEmailInput.value = !isEmailInput.value;
     emailController.clear();
     Logger.d('Input type toggled to: ${isEmailInput.value ? "Email" : "Mobile"}');
+  }
+
+  /// Select a country code
+  void selectCountry(CountryCode country) {
+    selectedCountry.value = country;
+    Logger.d('Country selected: ${country.name} (${country.dialCode})');
   }
   
   /// Send OTP to the provided email or mobile number
@@ -60,7 +68,9 @@ class LoginController extends GetxController {
     if (isEmailInput.value) {
       return GetUtils.isEmail(input);
     } else {
-      return GetUtils.isPhoneNumber(input);
+      // For mobile number, validate with country code prefix
+      final fullNumber = '${selectedCountry.value.dialCode}$input';
+      return GetUtils.isPhoneNumber(fullNumber);
     }
   }
   
@@ -72,7 +82,10 @@ class LoginController extends GetxController {
       // TODO: Implement actual OTP sending API call
       await Future.delayed(const Duration(seconds: 2)); // Simulate API call
       
-      Logger.d('OTP sent successfully to: ${emailController.text.trim()}');
+      final contactInfo = isEmailInput.value 
+          ? emailController.text.trim()
+          : '${selectedCountry.value.dialCode}${emailController.text.trim()}';
+      Logger.d('OTP sent successfully to: $contactInfo');
       
       // Show success message
       Get.snackbar(

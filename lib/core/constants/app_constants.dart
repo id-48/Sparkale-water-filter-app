@@ -25,6 +25,7 @@ class AppConstants {
   static const double defaultFontSize = 14.0;
   static const double mediumFontSize = 16.0;
   static const double largeFontSize = 18.0;
+  static const double titleHomeSize = 20.0;
   static const double extraLargeFontSize = 24.0;
   static const double titleFontSize = 28.0;
 

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:country_code_picker/country_code_picker.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_images.dart';
-import '../../../../core/constants/app_strings.dart';
+import '../../../../core/utils/translation_helper.dart';
+import '../../../../core/widgets/custom_text_field.dart';
 import '../controllers/login_controller.dart';
 
 class LoginView extends GetView<LoginController> {
@@ -57,21 +59,21 @@ class LoginView extends GetView<LoginController> {
   }
 
   Widget _buildLoginTitleSection() {
-    return const Column(
+    return Column(
       children: [
         Text(
-          AppStrings.loginTitle,
-          style: TextStyle(
+          Tr.loginTitle,
+          style: const TextStyle(
             fontSize: AppConstants.titleFontSize,
             fontWeight: FontWeight.w600,
             color: AppColors.textSecondary,
           ),
           textAlign: TextAlign.center,
         ),
-        SizedBox(height: AppConstants.smallPadding),
+        const SizedBox(height: AppConstants.smallPadding),
         Text(
-          AppStrings.loginSubtitle,
-          style: TextStyle(
+          Tr.loginSubtitle,
+          style: const TextStyle(
             fontSize: AppConstants.defaultFontSize,
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w400,
@@ -92,8 +94,8 @@ class LoginView extends GetView<LoginController> {
             Obx(
               () => Text(
                 controller.isEmailInput.value
-                    ? AppStrings.email
-                    : AppStrings.mono,
+                    ? Tr.email
+                    : Tr.mono,
                 style: const TextStyle(
                   fontSize: AppConstants.defaultFontSize,
                   color: AppColors.textSecondary,
@@ -106,8 +108,8 @@ class LoginView extends GetView<LoginController> {
               child: Obx(
                 () => Text(
                   controller.isEmailInput.value
-                      ? AppStrings.useMobileNumber
-                      : AppStrings.useEmail,
+                      ? Tr.useMobileNumber
+                      : Tr.useEmail,
                   style: const TextStyle(
                     fontSize: AppConstants.defaultFontSize,
                     color: AppColors.primary,
@@ -120,38 +122,57 @@ class LoginView extends GetView<LoginController> {
         ),
         const SizedBox(height: AppConstants.smallPadding),
         Obx(
-          () => TextFormField(
+          () => CustomTextField(
             controller: controller.emailController,
+            hintText: controller.isEmailInput.value
+                ? Tr.enterEmail
+                : Tr.enterMobileNumber,
             keyboardType: controller.isEmailInput.value
                 ? TextInputType.emailAddress
                 : TextInputType.phone,
-            decoration: InputDecoration(
-              hintText: controller.isEmailInput.value
-                  ? AppStrings.enterEmail
-                  : AppStrings.enterMobileNumber,
-              hintStyle: const TextStyle(
-                color: AppColors.textHint,
-                fontSize: AppConstants.defaultFontSize,
-              ),
-              filled: true,
-              fillColor: AppColors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
-                borderSide: const BorderSide(color: AppColors.border),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
-                borderSide: const BorderSide(color: AppColors.border),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
-                borderSide: const BorderSide(
-                  color: AppColors.primary,
-                  width: 2,
-                ),
-              ),
-            ),
+            prefixIcon: controller.isEmailInput.value
+                ? null
+                : CountryCodePicker(
+                    onChanged: (CountryCode countryCode) {
+                      controller.selectCountry(countryCode);
+                    },
+                    initialSelection: 'IN',
+                    favorite: const ['+91', 'IN'],
+                    showCountryOnly: false,
+                    showOnlyCountryWhenClosed: false,
+                    alignLeft: false,
+                    showDropDownButton: true,
+                    showFlag: true,
+                    flagWidth: 20,
+                    textStyle: const TextStyle(
+                      fontSize: AppConstants.defaultFontSize,
+                      color: AppColors.textSecondary,
+                    ),
+                    dialogTextStyle: const TextStyle(
+                      fontSize: AppConstants.defaultFontSize,
+                      color: AppColors.textSecondary,
+                    ),
+                    padding: EdgeInsets.zero,
+                  ),
           ),
+        ),
+        // Show hint text for mobile number input
+        Obx(
+          () => controller.isEmailInput.value
+              ? const SizedBox.shrink()
+              : Column(
+                  children: [
+                    const SizedBox(height: AppConstants.smallPadding),
+                    Text(
+                      Tr.enter10DigitMobileNumber,
+                      style: const TextStyle(
+                        fontSize: AppConstants.smallFontSize,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
         ),
       ],
     );
@@ -171,9 +192,9 @@ class LoginView extends GetView<LoginController> {
             borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
           ),
         ),
-        child: const Text(
-          AppStrings.sendOtp,
-          style: TextStyle(
+        child:  Text(
+          Tr.sendOtp,
+          style: const TextStyle(
             fontSize: AppConstants.mediumFontSize,
             fontWeight: FontWeight.w600,
           ),
@@ -191,13 +212,13 @@ class LoginView extends GetView<LoginController> {
             decoration: const BoxDecoration(color: AppColors.border),
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.symmetric(
+         Padding(
+          padding: const EdgeInsets.symmetric(
             horizontal: AppConstants.defaultPadding,
           ),
           child: Text(
-            AppStrings.or,
-            style: TextStyle(
+            Tr.or,
+            style: const TextStyle(
               fontSize: AppConstants.defaultFontSize,
               color: AppColors.textSecondary,
               fontWeight: FontWeight.w500,
@@ -244,9 +265,9 @@ class LoginView extends GetView<LoginController> {
               ),
             ),
             const SizedBox(width: AppConstants.defaultPadding),
-            const Text(
-              AppStrings.signInWithGoogle,
-              style: TextStyle(
+             Text(
+              Tr.signInWithGoogle,
+              style: const TextStyle(
                 fontSize: AppConstants.mediumFontSize,
                 fontWeight: FontWeight.w400,
                 color: AppColors.textSecondary,
@@ -262,9 +283,9 @@ class LoginView extends GetView<LoginController> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
-          AppStrings.dontHaveAccount,
-          style: TextStyle(
+         Text(
+          Tr.dontHaveAccount,
+          style: const TextStyle(
             fontSize: AppConstants.defaultFontSize,
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w400,
@@ -273,9 +294,9 @@ class LoginView extends GetView<LoginController> {
         const SizedBox(width: AppConstants.smallPadding),
         GestureDetector(
           onTap: controller.navigateToSignUp,
-          child: const Text(
-            AppStrings.signUp,
-            style: TextStyle(
+          child:  Text(
+            Tr.signUp,
+            style: const TextStyle(
               fontSize: AppConstants.defaultFontSize,
               color: AppColors.primary,
               fontWeight: FontWeight.w400,

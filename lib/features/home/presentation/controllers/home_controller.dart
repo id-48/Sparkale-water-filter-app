@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:sparkle/core/services/toast_service.dart';
 import '../../../../core/utils/translation_helper.dart';
 import '../../../../core/utils/logger.dart';
 
@@ -60,10 +59,8 @@ class HomeController extends GetxController {
     try {
       isLoading.value = true;
       await _loadInitialData();
-      ToastService.to.showSuccess("Data refreshed successfully");
     } catch (e) {
       Logger.e('Error refreshing data', error: e);
-      ToastService.to.showError("Failed to refresh data");
     } finally {
       isLoading.value = false;
     }

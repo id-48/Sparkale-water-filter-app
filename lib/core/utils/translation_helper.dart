@@ -13,52 +13,64 @@ class T {
 
 class Tr {
   static String get appName => T.get(TranslationKeys.appName);
-  static String get appVersion => T.get(TranslationKeys.appVersion);
-  static String get loading => T.get(TranslationKeys.loading);
   static String get error => T.get(TranslationKeys.error);
   static String get success => T.get(TranslationKeys.success);
-  static String get retry => T.get(TranslationKeys.retry);
-  static String get cancel => T.get(TranslationKeys.cancel);
-  static String get ok => T.get(TranslationKeys.ok);
-  static String get yes => T.get(TranslationKeys.yes);
-  static String get no => T.get(TranslationKeys.no);
-  static String get save => T.get(TranslationKeys.save);
-  static String get delete => T.get(TranslationKeys.delete);
-  static String get edit => T.get(TranslationKeys.edit);
-  static String get add => T.get(TranslationKeys.add);
-  static String get search => T.get(TranslationKeys.search);
-  static String get filter => T.get(TranslationKeys.filter);
-  static String get sort => T.get(TranslationKeys.sort);
-  static String get refresh => T.get(TranslationKeys.refresh);
-  static String get back => T.get(TranslationKeys.back);
-  static String get next => T.get(TranslationKeys.next);
-  static String get previous => T.get(TranslationKeys.previous);
-  static String get done => T.get(TranslationKeys.done);
-  static String get close => T.get(TranslationKeys.close);
-  static String get splashTitle => T.get(TranslationKeys.splashTitle);
   static String get splashSubtitle => T.get(TranslationKeys.splashSubtitle);
-  static String get homeTitle => T.get(TranslationKeys.homeTitle);
-  static String get welcomeMessage => T.get(TranslationKeys.welcomeMessage);
-  static String get counterDemo => T.get(TranslationKeys.counterDemo);
-  static String get increase => T.get(TranslationKeys.increase);
-  static String get decrease => T.get(TranslationKeys.decrease);
-  static String get reset => T.get(TranslationKeys.reset);
-  static String get appFeatures => T.get(TranslationKeys.appFeatures);
-  static String get mvcArchitecture => T.get(TranslationKeys.mvcArchitecture);
-  static String get mvcArchitectureDesc => T.get(TranslationKeys.mvcArchitectureDesc);
-  static String get getxStateManagement => T.get(TranslationKeys.getxStateManagement);
-  static String get getxStateManagementDesc => T.get(TranslationKeys.getxStateManagementDesc);
-  static String get localStorage => T.get(TranslationKeys.localStorage);
-  static String get localStorageDesc => T.get(TranslationKeys.localStorageDesc);
-  static String get customTheme => T.get(TranslationKeys.customTheme);
-  static String get customThemeDesc => T.get(TranslationKeys.customThemeDesc);
-  static String get multiLanguage => T.get(TranslationKeys.multiLanguage);
-  static String get multiLanguageDesc => T.get(TranslationKeys.multiLanguageDesc);
-  static String get language => T.get(TranslationKeys.language);
-  static String get selectLanguage => T.get(TranslationKeys.selectLanguage);
-  static String get english => T.get(TranslationKeys.english);
-  static String get gujarati => T.get(TranslationKeys.gujarati);
   static String get languageChanged => T.get(TranslationKeys.languageChanged);
   static String get unknownError => T.get(TranslationKeys.unknownError);
   static String get noDataFound => T.get(TranslationKeys.noDataFound);
+
+  // Home / Bottom Nav
+  static String get homeTitle => T.get('homeTitle');
+  static String get support => T.get('support');
+  static String get profile => T.get('profile');
+
+  // Profile
+  static String get accountSetting => T.get('accountSetting');
+  static String get personalInformation => T.get('personalInformation');
+  static String get billingInformation => T.get('billingInformation');
+  static String get signOut => T.get('signOut');
+
+  // Login
+  static String get loginTitle => T.get('loginTitle');
+  static String get loginSubtitle => T.get('loginSubtitle');
+  static String get back => T.get('back');
+  static String get verifyEmail => T.get('verifyEmail');
+  static String get enterCodeEmail => T.get('enterCodeEmail');
+  static String get email => T.get('email');
+  static String get mono => T.get('mono');
+  static String get useMobileNumber => T.get('useMobileNumber');
+  static String get useEmail => T.get('useEmail');
+  static String get enterEmail => T.get('enterEmail');
+  static String get enterMobileNumber => T.get('enterMobileNumber');
+  static String get sendOtp => T.get('sendOtp');
+  static String get verifyOtp => T.get('verifyOtp');
+  static String get didntReciveEmail => T.get('didntReciveEmail');
+  static String get clickToSend => T.get('clickToSend');
+  static String get codeResendAfter => T.get('codeResendAfter');
+  static String get enter10DigitMobileNumber => T.get('enter10DigitMobileNumber');
+  static String get or => T.get('or');
+  static String get signInWithGoogle => T.get('signInWithGoogle');
+  static String get dontHaveAccount => T.get('dontHaveAccount');
+  static String get signUp => T.get('signUp');
+
+  // Register
+  static String get registerTitle => T.get('registerTitle');
+  static String get registerSubtitle => T.get('registerSubtitle');
+  static String get firstName => T.get('firstName');
+  static String get lastName => T.get('lastName');
+  static String get phoneNumber => T.get('phoneNumber');
+  static String get enterFirstName => T.get('enterFirstName');
+  static String get enterLastName => T.get('enterLastName');
+  static String get enterPhoneNumber => T.get('enterPhoneNumber');
+  static String get byProviding => T.get('byProviding');
+  static String get and => T.get('and');
+  static String get inuseOfApp => T.get('inuseOfApp');
+  static String get signWithGoogle => T.get('signWithGoogle');
+  static String get termsOfService => T.get('termsOfService');
+  static String get privacyPolicy => T.get('privacyPolicy');
+  static String get alreadyHaveAccount => T.get('alreadyHaveAccount');
+  static String get signIn => T.get('signIn');
+  static String get language => T.get('language');
+  static String get selectLanguage => T.get('selectLanguage');
 }

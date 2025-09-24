@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 import '../features/splash/presentation/views/splash_view.dart';
 import '../features/splash/presentation/bindings/splash_binding.dart';
-import '../features/home/presentation/views/home_view.dart';
-import '../features/home/presentation/bindings/home_binding.dart';
+import '../features/main/presentation/views/main_view.dart';
+import '../features/main/presentation/bindings/main_binding.dart';
 import '../features/login/presentation/views/login_view.dart';
 import '../features/login/presentation/bindings/login_binding.dart';
 import '../features/register/presentation/views/register_view.dart';
@@ -15,7 +15,7 @@ class AppPages {
   static const String login = '/login';
   static const String register = '/register';
   static const String emailVerification = '/email-verification';
-  static const String home = '/home';
+  static const String main = '/main';
   
   static final List<GetPage> routes = [
     GetPage(
@@ -39,9 +39,9 @@ class AppPages {
       binding: EmailVerificationBinding(),
     ),
     GetPage(
-      name: home,
-      page: () => const HomeView(),
-      binding: HomeBinding(),
+      name: main,
+      page: () => const MainView(),
+      binding: MainBinding(),
     ),
   ];
 }

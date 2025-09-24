@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:get/get.dart';
 import 'package:otp_pin_field/otp_pin_field.dart';
+import 'package:sparkle/core/utils/translation_helper.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_images.dart';
@@ -13,7 +15,6 @@ class EmailVerificationView extends GetView<EmailVerificationController> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -51,7 +52,7 @@ class EmailVerificationView extends GetView<EmailVerificationController> {
       alignment: Alignment.centerLeft,
       child: GestureDetector(
         onTap: controller.navigateBack,
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
@@ -61,8 +62,8 @@ class EmailVerificationView extends GetView<EmailVerificationController> {
             ),
             SizedBox(width: 4),
             Text(
-              'Back to log in',
-              style: TextStyle(
+              Tr.back,
+              style: const TextStyle(
                 fontSize: AppConstants.mediumFontSize,
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w400,
@@ -112,7 +113,7 @@ class EmailVerificationView extends GetView<EmailVerificationController> {
           height: 50,
           decoration: const BoxDecoration(shape: BoxShape.circle),
           child: Icon(
-            Icons.phone_android,
+            Icons.email,
             color: AppColors.primary.withValues(alpha: 0.8),
             size: 30,
           ),
@@ -122,9 +123,9 @@ class EmailVerificationView extends GetView<EmailVerificationController> {
   }
 
   Widget _buildTitleSection() {
-    return const Text(
-      'Verify your email id',
-      style: TextStyle(
+    return Text(
+      Tr.verifyEmail,
+      style: const TextStyle(
         fontSize: AppConstants.titleFontSize,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
@@ -144,9 +145,9 @@ class EmailVerificationView extends GetView<EmailVerificationController> {
             fontWeight: FontWeight.w400,
           ),
           children: [
-            const TextSpan(
-              text: 'Enter the code we\'ve sent to your email address in ',
-              style: TextStyle(
+            TextSpan(
+              text: Tr.enterCodeEmail,
+              style: const TextStyle(
                 fontWeight: FontWeight.w400,
                 color: AppColors.textSecondary,
                 fontSize: AppConstants.mediumFontSize,
@@ -182,28 +183,31 @@ class EmailVerificationView extends GetView<EmailVerificationController> {
             maxLength: 6,
             fieldWidth: 37,
             fieldHeight: 40,
-            otpPinFieldDecoration: OtpPinFieldDecoration.underlinedPinBoxDecoration,
+            cursorColor: AppColors.primary,
+            highlightBorder: false,
             otpPinFieldStyle: const OtpPinFieldStyle(
               hintText: '0',
-              activeFieldBorderColor:AppColors.primary,
+              showHintText: true,
+              activeFieldBorderColor: AppColors.white,
               fieldBorderRadius: 0,
+              defaultFieldBorderColor: AppColors.white,
+              filledFieldBorderColor: AppColors.white,
               fieldBorderWidth: 0,
               hintTextColor: AppColors.grey,
-              textStyle:  TextStyle(
+              textStyle: TextStyle(
                 fontSize: AppConstants.largeFontSize,
-                fontWeight: FontWeight.w400,
+                fontWeight: FontWeight.w600,
                 color: AppColors.primary,
               ),
             ),
-            autoFocus: true,
             autoFillEnable: true,
-            showCursor: false,
-
+            showCursor: true,
             keyboardType: TextInputType.number,
             onChange: (value) => controller.onOTPChanged(value),
             onSubmit: (value) => controller.onOTPCompleted(value),
           ),
         ),
+
         Obx(
           () => controller.otpError.value.isNotEmpty
               ? Padding(
@@ -246,9 +250,9 @@ class EmailVerificationView extends GetView<EmailVerificationController> {
                     valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
                   ),
                 )
-              : const Text(
-                  'Verify OTP',
-                  style: TextStyle(
+              : Text(
+                  Tr.verifyOtp,
+                  style: const TextStyle(
                     fontSize: AppConstants.mediumFontSize,
                     fontWeight: FontWeight.w600,
                   ),
@@ -262,9 +266,9 @@ class EmailVerificationView extends GetView<EmailVerificationController> {
     return Obx(
       () => Column(
         children: [
-          const Text(
-            'Didn\'t receive the email?',
-            style: TextStyle(
+          Text(
+            Tr.didntReciveEmail,
+            style: const TextStyle(
               fontSize: AppConstants.mediumFontSize,
               color: AppColors.textSecondary,
               fontWeight: FontWeight.w400,
@@ -275,8 +279,8 @@ class EmailVerificationView extends GetView<EmailVerificationController> {
             onTap: controller.canResend.value ? controller.resendOTP : null,
             child: Text(
               controller.canResend.value
-                  ? 'Click to resend'
-                  : 'Code resend after ${controller.resendCountdown.value}',
+                  ? Tr.clickToSend
+                  : '${Tr.codeResendAfter} ${controller.resendCountdown.value}',
               style: TextStyle(
                 fontSize: AppConstants.mediumFontSize,
                 color: AppColors.primary,
@@ -284,6 +288,7 @@ class EmailVerificationView extends GetView<EmailVerificationController> {
                 decoration: controller.canResend.value
                     ? TextDecoration.underline
                     : TextDecoration.none,
+                  decorationColor: AppColors.primary,
               ),
             ),
           ),

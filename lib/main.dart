@@ -5,7 +5,6 @@ import 'core/constants/app_strings.dart';
 import 'core/utils/preference_utils.dart';
 import 'core/utils/logger.dart';
 import 'core/services/json_translation_service.dart';
-import 'core/services/toast_service.dart';
 import 'routes/app_pages.dart';
 
 void main() async {
@@ -20,7 +19,6 @@ Future<void> _initializeServices() async {
   try {
     await PreferenceUtils.init();
     Get.put(JsonTranslationService(), permanent: true);
-    Get.put(ToastService(), permanent: true);
     Logger.i('App services initialized successfully');
   } catch (e) {
     Logger.e('Error initializing services', error: e);
@@ -44,7 +42,6 @@ class MyApp extends StatelessWidget {
       getPages: AppPages.routes,
       defaultTransition: Transition.cupertino,
       transitionDuration: const Duration(milliseconds: 300),
-      navigatorKey: ToastService.to.navigatorKey,
       enableLog: true,
       logWriterCallback: (text, {bool isError = false}) {
         if (isError) {

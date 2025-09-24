@@ -20,10 +20,22 @@ class AppStrings {
   // Home Screen
   static const String homeTitle = 'Home';
   static const String welcomeMessage = 'Welcome to Sparkale Water Filter App';
-  
+  static const String support = 'Support';
+  static const String profile = 'Profile';
+
+
+  //Setting Screen
+  static const String accountSetting = 'Account Settings';
+  static const String personalInformation = 'Personal Info';
+  static const String billingInformation = 'Billing info';
+  static const String signOut = 'Sign Out';
+
   // Login Screen
   static const String loginTitle = 'Login To Your Account';
   static const String loginSubtitle = 'Welcome back! Please enter your details.';
+  static const String backToLogin = 'Back to log in';
+  static const String verifyEmail = 'Verify your email id';
+  static const String enterCodeEmail = 'Enter the code we\'ve sent to your email address in ';
   static const String email = 'Email';
   static const String mono = 'Mobile Number';
   static const String useMobileNumber = 'Use Mobile Number';
@@ -31,6 +43,11 @@ class AppStrings {
   static const String enterEmail = 'Enter your email';
   static const String enterMobileNumber = 'Enter your mobile number';
   static const String sendOtp = 'Send OTP';
+  static const String verifyOtp = 'Verify OTP';
+  static const String didntReciveEmail = 'Didn\'t receive the email?';
+  static const String clickToSend = 'Click to resend';
+  static const String codeResendAfter = 'Code resend after';
+  static const String enter10DigitMobileNumber = 'Enter 10-digit mobile number (e.g., 9978906XXX)';
   static const String or = 'or';
   static const String signInWithGoogle = 'Sign in with Google';
   static const String dontHaveAccount = "Don't have an account yet?";
@@ -46,6 +63,10 @@ class AppStrings {
   static const String enterLastName = 'Enter your last name';
   static const String enterPhoneNumber = '+1 (555) 000-0000';
   static const String termsAndConditions = 'By providing my phone number, I hereby agree and accept the Terms of Service and Privacy Policy in use of the app';
+  static const String byProviding = 'By providing my phone number, I hereby agree and accept the ';
+  static const String and = ' and ';
+  static const String inuseOfApp = '  in use of the app';
+  static const String signWithGoogle = 'Sign in with Google';
   static const String termsOfService = 'Terms of Service';
   static const String privacyPolicy = 'Privacy Policy';
   static const String alreadyHaveAccount = 'Already have an account yet? ';

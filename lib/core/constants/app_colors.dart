@@ -20,6 +20,7 @@ class AppColors {
   // Neutral Colors
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
+  static const Color transprent = Color(0x0);
   static const Color grey = Color(0xFF9E9E9E);
   static const Color greyLight = Color(0xFFF5F5F5);
   static const Color greyDark = Color(0xFF616161);
@@ -38,7 +39,7 @@ class AppColors {
   // Text Colors
   static const Color textPrimary = Color(0xFF101828);
   static const Color textSecondary = Color(0xFF344054);
-  static const Color textHint = Color(0xFFBDBDBD);
+  static const Color textHint = Color(0xFF344054);
   static const Color textDisabled = Color(0xFFE0E0E0);
   
   // Border Colors
