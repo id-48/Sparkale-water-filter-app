@@ -3,6 +3,10 @@ import 'package:get/get.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/logger.dart';
+import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/services/api_client.dart';
+import '../../../../core/services/recaptcha_service.dart';
+import '../../../../core/services/token_storage_service.dart';
 
 class LoginController extends GetxController {
   // Text controllers
@@ -12,6 +16,11 @@ class LoginController extends GetxController {
   final RxBool isEmailInput = true.obs;
   final RxBool isLoading = false.obs;
   final Rx<CountryCode> selectedCountry = CountryCode.fromCountryCode('IN').obs;
+  
+  // Services
+  final ApiClient _apiClient = ApiClient();
+  final RecaptchaService _recaptchaService = RecaptchaService();
+  final TokenStorageService _tokenStorage = TokenStorageService();
   
   @override
   void onInit() {
@@ -79,27 +88,58 @@ class LoginController extends GetxController {
     try {
       isLoading.value = true;
       
-      await Future.delayed(const Duration(seconds: 2)); // Simulate API call
+      // Generate reCAPTCHA token
+      final reCaptchaToken = await _recaptchaService.generateLoginToken();
       
-      final contactInfo = isEmailInput.value 
-          ? emailController.text.trim()
-          : '${selectedCountry.value.dialCode}${emailController.text.trim()}';
-      Logger.d('OTP sent successfully to: $contactInfo');
+      // Prepare request data
+      final requestData = {
+        'reCaptchaToken': reCaptchaToken,
+        'platform': 'android',
+        if (isEmailInput.value) 'email': emailController.text.trim(),
+        if (!isEmailInput.value) 'mobileNo': emailController.text.trim(),
+      };
       
-      // Show success message
-      Get.snackbar(
-        AppStrings.success,
-        AppStrings.otpSentSuccessfully,
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
+      // Make API call
+      final response = await _apiClient.postJson<Map<String, dynamic>>(
+        ApiEndpoints.login,
+        data: requestData,
       );
       
-      // Navigate to OTP verification screen
-      Get.toNamed('/email-verification', arguments: {
-        'email': emailController.text.trim(),
-      });
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data!;
+        final success = data['success'] ?? false;
+        final loginTokenId = data['loginTokenId'];
+        
+        if (success && loginTokenId != null) {
+          await _tokenStorage.saveLoginTokens('', loginTokenId);
+          
+          Get.snackbar(
+            AppStrings.success,
+            AppStrings.otpSentSuccessfully,
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
+          
+          // Navigate to verification screen
+          if (isEmailInput.value) {
+            Get.toNamed('/email-verification', arguments: {
+              'email': emailController.text.trim(),
+              'loginTokenId': loginTokenId,
+            });
+          } else {
+            Get.toNamed('/mobile-verification', arguments: {
+              'mobileNo': emailController.text.trim(),
+              'countryCode': selectedCountry.value.dialCode,
+              'loginTokenId': loginTokenId,
+            });
+          }
+        } else {
+          _showErrorSnackBar(data['error'] ?? AppStrings.errorSendingOtp);
+        }
+      } else {
+        _showErrorSnackBar(AppStrings.errorSendingOtp);
+      }
       
     } catch (e) {
       Logger.e('Error sending OTP', error: e);

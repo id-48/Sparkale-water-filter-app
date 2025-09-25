@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/utils/logger.dart';
@@ -10,8 +8,6 @@ import '../../../../core/services/api_client.dart';
 import '../../../../core/services/recaptcha_service.dart';
 import '../../../../core/services/fcm_service.dart';
 import '../../../../core/services/token_storage_service.dart';
-import '../../../../core/models/auth/signup_models.dart';
-import 'package:dio/dio.dart';
 
 class MobileVerificationController extends GetxController {
   final TextEditingController otpController = TextEditingController();
@@ -23,6 +19,12 @@ class MobileVerificationController extends GetxController {
   final RxBool canResend = true.obs;
   final RxInt resendCountdown = 0.obs;
   final RxString currentOTP = ''.obs;
+  
+  // Services
+  final ApiClient _apiClient = ApiClient();
+  final RecaptchaService _recaptchaService = RecaptchaService();
+  final FCMService _fcmService = FCMService();
+  final TokenStorageService _tokenStorage = TokenStorageService();
 
   Timer? _resendTimer;
 
@@ -43,8 +45,8 @@ class MobileVerificationController extends GetxController {
   void _initializeMobile() {
     final arguments = Get.arguments;
     if (arguments != null && arguments is Map<String, dynamic>) {
-      userMobile.value = arguments['mobile'] ?? '';
-      tokenId.value = arguments['tokenId'] ?? '';
+      userMobile.value = arguments['mobileNo'] ?? arguments['mobile'] ?? '';
+      tokenId.value = arguments['loginTokenId'] ?? arguments['tokenId'] ?? '';
     }
 
     if (userMobile.value.isEmpty) {
@@ -73,58 +75,52 @@ class MobileVerificationController extends GetxController {
       otpError.value = 'Please enter a valid 6-digit OTP';
       return;
     }
+    
+    if (tokenId.value.isEmpty) {
+      otpError.value = 'Login token not found';
+      return;
+    }
+    
     try {
       isLoading.value = true;
-
-      final String recaptchaToken = await RecaptchaService().generateSignUpVerificationToken(action: 'SIGNUPVERIFICATION');
-      final String platform = GetPlatform.isAndroid ? 'android' : 'ios';
-
-      final request = VerifySignUpOtpRequest(
-        tokenId: tokenId.value,
-        mobileOtp: otp,
-        reCaptchaToken: recaptchaToken,
-        platform: platform,
+      
+      // Get Firebase token and reCAPTCHA token
+      final firebaseToken = await _fcmService.getToken();
+      final reCaptchaToken = await _recaptchaService.generateLoginVerificationToken();
+      
+      // Prepare request data
+      final requestData = {
+        'loginTokenId': tokenId.value,
+        'otp': otp,
+        'firebaseToken': firebaseToken,
+        'reCaptchaToken': reCaptchaToken,
+        'platform': 'android',
+      };
+      
+      // Make API call
+      final response = await _apiClient.postJson<Map<String, dynamic>>(
+        ApiEndpoints.verifyLogin,
+        data: requestData,
       );
-
-      Logger.api('VerifySignUpOtp request', endpoint: ApiEndpoints.verifySignUpOtp, data: request.toJson());
-
-      final response = await ApiClient().postJson<Map<String, dynamic>>(
-        ApiEndpoints.verifySignUpOtp,
-        data: request.toJson(),
-      );
-      final data = response.data ?? <String, dynamic>{};
-      Logger.network('VerifySignUpOtp response', url: ApiEndpoints.verifySignUpOtp, statusCode: response.statusCode);
-      Logger.api('VerifySignUpOtp response body', endpoint: ApiEndpoints.verifySignUpOtp, data: data);
-      // Handle non-2xx responses with JSON body
-      if (response.statusCode != null && response.statusCode! >= 400) {
-        final String err = (data['error'] ?? 'Verification failed').toString();
-        otpError.value = err;
-        return;
-      }
-      final parsed = VerifySignUpOtpResponse.fromJson(data);
-      if (!parsed.success) {
-        otpError.value = parsed.error.isNotEmpty ? parsed.error : 'Verification failed';
-        return;
-      }
-
-      // Store login tokens for the second API call
-      if (parsed.loginToken != null && parsed.loginTokenId != null) {
-        await TokenStorageService().saveLoginTokens(parsed.loginToken!, parsed.loginTokenId!);
+      
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data!;
+        final success = data['success'] ?? false;
+        final token = data['token'];
         
-        // Make the second API call to verifyLogin
-        await _verifyLogin(parsed.loginToken!, parsed.loginTokenId!);
+        if (success && token != null) {
+          await _tokenStorage.saveJWTToken(token);
+          Get.offAllNamed('/main');
+        } else {
+          otpError.value = data['error'] ?? 'Verification failed';
+        }
       } else {
-        otpError.value = 'Login tokens not received';
-        return;
+        otpError.value = 'Verification failed';
       }
-    } on DioException catch (e, st) {
-      Logger.e('Verify OTP API error', error: e, stackTrace: st);
-      otpError.value = e.response?.data is Map<String, dynamic>
-          ? ((e.response?.data as Map<String, dynamic>)['error'] ?? 'Network error').toString()
-          : 'Network error';
-    } catch (e, st) {
-      Logger.e('Verify OTP unexpected error', error: e, stackTrace: st);
-      otpError.value = 'Unexpected error';
+      
+    } catch (e) {
+      Logger.e('Error verifying mobile OTP', error: e);
+      otpError.value = 'Verification failed';
     } finally {
       isLoading.value = false;
     }
@@ -172,67 +168,6 @@ class MobileVerificationController extends GetxController {
     });
   }
 
-  Future<void> _verifyLogin(String loginToken, String loginTokenId) async {
-    try {
-      // Generate FCM token
-      // final String firebaseToken = await FCMService().getToken();
-      String token;
-
-      if (Platform.isAndroid) {
-        token = await FirebaseMessaging.instance.getToken() ?? "";
-      }else{
-        token = await FirebaseMessaging.instance.getAPNSToken() ?? "";
-      }
-      final request = VerifyLoginRequest(
-        loginToken: loginToken,
-        loginTokenId: loginTokenId,
-        firebaseToken: token,
-      );
-
-      Logger.api('VerifyLogin request', endpoint: ApiEndpoints.verifyLogin, data: request.toJson());
-
-      final response = await ApiClient().postJson<Map<String, dynamic>>(
-        ApiEndpoints.verifyLogin,
-        data: request.toJson(),
-      );
-
-      final data = response.data ?? <String, dynamic>{};
-      Logger.network('VerifyLogin response', url: ApiEndpoints.verifyLogin, statusCode: response.statusCode);
-      Logger.api('VerifyLogin response body', endpoint: ApiEndpoints.verifyLogin, data: data);
-
-      // Handle non-2xx responses with JSON body
-      if (response.statusCode != null && response.statusCode! >= 400) {
-        final String err = (data['error'] ?? 'Login verification failed').toString();
-        otpError.value = err;
-        return;
-      }
-
-      final parsed = VerifyLoginResponse.fromJson(data);
-      if (!parsed.success) {
-        otpError.value = parsed.error.isNotEmpty ? parsed.error : 'Login verification failed';
-        return;
-      }
-
-      // Store JWT token
-      if (parsed.token != null && parsed.token!.isNotEmpty) {
-        await TokenStorageService().saveJWTToken(parsed.token!);
-        Logger.i('JWT token saved successfully');
-        
-        // Navigate to main screen
-        Get.offAllNamed('/main');
-      } else {
-        otpError.value = 'JWT token not received';
-      }
-    } on DioException catch (e, st) {
-      Logger.e('VerifyLogin API error', error: e, stackTrace: st);
-      otpError.value = e.response?.data is Map<String, dynamic>
-          ? ((e.response?.data as Map<String, dynamic>)['error'] ?? 'Network error').toString()
-          : 'Network error';
-    } catch (e, st) {
-      Logger.e('VerifyLogin unexpected error', error: e, stackTrace: st);
-      otpError.value = 'Unexpected error during login verification';
-    }
-  }
 
   void navigateBack() {
     Get.back();

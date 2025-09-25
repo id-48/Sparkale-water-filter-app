@@ -30,13 +30,8 @@ class HomeController extends GetxController {
   }
   
   Future<void> _loadInitialData() async {
-    try {
-      Logger.user('Initial data loaded');
-    } catch (e) {
-      Logger.e('Error loading initial data', error: e);
-    }
+    // Load initial data here
   }
-  
   
   Future<void> refreshData() async {
     try {

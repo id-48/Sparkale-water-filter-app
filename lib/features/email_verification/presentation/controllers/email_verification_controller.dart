@@ -3,16 +3,28 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/utils/logger.dart';
+import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/services/api_client.dart';
+import '../../../../core/services/recaptcha_service.dart';
+import '../../../../core/services/fcm_service.dart';
+import '../../../../core/services/token_storage_service.dart';
 
 class EmailVerificationController extends GetxController {
   final TextEditingController otpController = TextEditingController();
 
   final RxString userEmail = ''.obs;
+  final RxString loginTokenId = ''.obs;
   final RxBool isLoading = false.obs;
   final RxString otpError = ''.obs;
   final RxBool canResend = true.obs;
   final RxInt resendCountdown = 0.obs;
   final RxString currentOTP = ''.obs;
+  
+  // Services
+  final ApiClient _apiClient = ApiClient();
+  final RecaptchaService _recaptchaService = RecaptchaService();
+  final FCMService _fcmService = FCMService();
+  final TokenStorageService _tokenStorage = TokenStorageService();
 
   Timer? _resendTimer;
 
@@ -35,15 +47,11 @@ class EmailVerificationController extends GetxController {
   }
 
   void _initializeEmail() {
-    // Get email from arguments passed from register screen
+    // Get email and loginTokenId from arguments passed from login screen
     final arguments = Get.arguments;
     if (arguments != null && arguments is Map<String, dynamic>) {
       userEmail.value = arguments['email'] ?? '';
-    }
-
-    if (userEmail.value.isEmpty) {
-      // Fallback to a default email for demo
-      userEmail.value = 'olivia@untitledui.com';
+      loginTokenId.value = arguments['loginTokenId'] ?? '';
     }
   }
 
@@ -68,8 +76,55 @@ class EmailVerificationController extends GetxController {
       otpError.value = 'Please enter a valid 6-digit OTP';
       return;
     }
-     // Navigate to main
-     Get.offAllNamed('/main');
+    
+    if (loginTokenId.value.isEmpty) {
+      otpError.value = 'Login token not found';
+      return;
+    }
+    
+    try {
+      isLoading.value = true;
+      
+      // Get Firebase token and reCAPTCHA token
+      final firebaseToken = await _fcmService.getToken();
+      final reCaptchaToken = await _recaptchaService.generateLoginVerificationToken();
+      
+      // Prepare request data
+      final requestData = {
+        'loginTokenId': loginTokenId.value,
+        'otp': otp,
+        'firebaseToken': firebaseToken,
+        'reCaptchaToken': reCaptchaToken,
+        'platform': 'android',
+      };
+      
+      // Make API call
+      final response = await _apiClient.postJson<Map<String, dynamic>>(
+        ApiEndpoints.verifyLogin,
+        data: requestData,
+      );
+      
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data!;
+        final success = data['success'] ?? false;
+        final token = data['token'];
+        
+        if (success && token != null) {
+          await _tokenStorage.saveJWTToken(token);
+          Get.offAllNamed('/main');
+        } else {
+          otpError.value = data['error'] ?? 'Verification failed';
+        }
+      } else {
+        otpError.value = 'Verification failed';
+      }
+      
+    } catch (e) {
+      Logger.e('Error verifying email OTP', error: e);
+      otpError.value = 'Verification failed';
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   Future<void> verifyOTP() async {

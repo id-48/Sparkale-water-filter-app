@@ -22,17 +22,8 @@ class SplashController extends GetxController {
   }
   
   void _navigateToNextScreen() {
-    try {
-      final isFirstTime = PreferenceUtils.isFirstTime();
-      final userToken = PreferenceUtils.getUserToken();
-
-      Future.delayed(const Duration(milliseconds: 100), () {
-        Get.offAllNamed('/login');
-      });
-    } catch (e) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        Get.offAllNamed('/login');
-      });
-    }
+    Future.delayed(const Duration(milliseconds: 100), () {
+      Get.offAllNamed('/login');
+    });
   }
 }
