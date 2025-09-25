@@ -79,7 +79,6 @@ class LoginController extends GetxController {
     try {
       isLoading.value = true;
       
-      // TODO: Implement actual OTP sending API call
       await Future.delayed(const Duration(seconds: 2)); // Simulate API call
       
       final contactInfo = isEmailInput.value 
@@ -97,8 +96,10 @@ class LoginController extends GetxController {
         duration: const Duration(seconds: 3),
       );
       
-      // TODO: Navigate to OTP verification screen
-      // Get.toNamed(AppPages.otpVerification);
+      // Navigate to OTP verification screen
+      Get.toNamed('/email-verification', arguments: {
+        'email': emailController.text.trim(),
+      });
       
     } catch (e) {
       Logger.e('Error sending OTP', error: e);
@@ -113,7 +114,6 @@ class LoginController extends GetxController {
     try {
       isLoading.value = true;
       
-      // TODO: Implement Google Sign-In
       await Future.delayed(const Duration(seconds: 2)); // Simulate API call
       
       Logger.d('Google Sign-In initiated');
@@ -128,8 +128,8 @@ class LoginController extends GetxController {
         duration: const Duration(seconds: 3),
       );
       
-      // TODO: Navigate to home screen after successful login
-      // Get.offAllNamed(AppPages.home);
+      // Navigate to home screen after successful login
+      Get.offAllNamed('/main');
       
     } catch (e) {
       Logger.e('Error with Google Sign-In', error: e);

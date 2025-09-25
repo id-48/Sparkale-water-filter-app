@@ -5,7 +5,6 @@ import '../../../../core/utils/logger.dart';
 class HomeController extends GetxController {
   
   final RxBool isLoading = false.obs;
-  final RxInt counter = 0.obs;
   
   @override
   void onInit() {
@@ -38,22 +37,6 @@ class HomeController extends GetxController {
     }
   }
   
-  void incrementCounter() {
-    counter.value++;
-    Logger.user('Counter incremented', action: 'increment');
-  }
-  
-  void decrementCounter() {
-    if (counter.value > 0) {
-      counter.value--;
-      Logger.user('Counter decremented', action: 'decrement');
-    }
-  }
-  
-  void resetCounter() {
-    counter.value = 0;
-    Logger.user('Counter reset', action: 'reset');
-  }
   
   Future<void> refreshData() async {
     try {

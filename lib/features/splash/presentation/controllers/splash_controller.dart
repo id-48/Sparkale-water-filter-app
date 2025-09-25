@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/preference_utils.dart';
+import '../../../../core/utils/logger.dart';
 import '../../../../routes/app_pages.dart';
 
 class SplashController extends GetxController {
@@ -21,13 +22,17 @@ class SplashController extends GetxController {
   }
   
   void _navigateToNextScreen() {
-    final isFirstTime = PreferenceUtils.isFirstTime();
-    final userToken = PreferenceUtils.getUserToken();
-    
-    if (isFirstTime || userToken == null) {
-      Get.offAllNamed(AppPages.login);
-    } else {
-      Get.offAllNamed(AppPages.main);
+    try {
+      final isFirstTime = PreferenceUtils.isFirstTime();
+      final userToken = PreferenceUtils.getUserToken();
+
+      Future.delayed(const Duration(milliseconds: 100), () {
+        Get.offAllNamed('/login');
+      });
+    } catch (e) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        Get.offAllNamed('/login');
+      });
     }
   }
 }

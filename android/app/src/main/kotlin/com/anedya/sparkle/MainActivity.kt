@@ -1,4 +1,4 @@
-package com.example.sparkle
+package com.anedya.sparkle
 
 import io.flutter.embedding.android.FlutterActivity
 

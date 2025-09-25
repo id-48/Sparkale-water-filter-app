@@ -126,7 +126,7 @@ class LoginView extends GetView<LoginController> {
             controller: controller.emailController,
             hintText: controller.isEmailInput.value
                 ? Tr.enterEmail
-                : Tr.enterMobileNumber,
+                : Tr.enterPhoneNumber,
             keyboardType: controller.isEmailInput.value
                 ? TextInputType.emailAddress
                 : TextInputType.phone,

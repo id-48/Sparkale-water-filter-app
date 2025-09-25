@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:dio/dio.dart';
 import '../../../../core/utils/logger.dart';
+import '../../../../core/services/api_client.dart';
+import '../../../../core/services/recaptcha_service.dart';
+import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/models/auth/signup_models.dart';
 
 class RegisterController extends GetxController {
   // Form Controllers
@@ -58,9 +63,100 @@ class RegisterController extends GetxController {
   
   // Register User
   Future<void> registerUser() async {
-    Get.offNamed('/email-verification', arguments: {
-      'email': emailController.text.trim(),
-    });
+    if (isLoading.value) return;
+    if (!isTermsAccepted.value) {
+      Get.snackbar('Terms', 'Please accept Terms & Conditions');
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+
+      final String firstName = firstNameController.text.trim();
+      final String lastName = lastNameController.text.trim();
+      final String email = emailController.text.trim();
+      final String mobile = phoneController.text.trim();
+      final String countryCode = selectedCountryCode.value.replaceAll('+', '');
+
+      final String recaptchaToken = await RecaptchaService().generateSignUpToken();
+
+      final SignupRequest request = SignupRequest(
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        mobileNo: mobile,
+        imageBase64: null,
+        countryCode: countryCode,
+        reCaptchaToken: recaptchaToken,
+        platform: GetPlatform.isAndroid ? 'android' : 'ios',
+      );
+
+      Logger.api('Register request', endpoint: ApiEndpoints.signup, data: request.toJson());
+
+      final response = await ApiClient().postJson<Map<String, dynamic>>(
+        ApiEndpoints.signup,
+        data: request.toJson(),
+        options: Options(responseType: ResponseType.json),
+      );
+
+      final data = response.data ?? <String, dynamic>{};
+      Logger.api('Register response', endpoint: ApiEndpoints.signup, data: data);
+
+      final signupResponse = SignupResponse.fromJson(data);
+      if (!signupResponse.success) {
+        final String error = signupResponse.error.isNotEmpty ? signupResponse.error : 'Something went wrong';
+        Get.snackbar('Register Failed', error);
+        return;
+      }
+
+      final bool verifyMobileNoOTP = signupResponse.verifyMobileNoOTP;
+      final bool verifyEmailOTP = signupResponse.verifyEmailOTP;
+
+      // Navigate per rules
+      final String? tokenId = signupResponse.tokenId;
+
+      if (verifyMobileNoOTP && verifyEmailOTP) {
+        await Get.toNamed('/mobile-verification', arguments: {
+          'mobile': mobile,
+          'tokenId': tokenId,
+        });
+        await Get.toNamed('/email-verification', arguments: {
+          'email': email,
+          'tokenId': tokenId,
+        });
+        return;
+      }
+
+      if (verifyMobileNoOTP) {
+        Get.toNamed('/mobile-verification', arguments: {
+          'mobile': mobile,
+          'tokenId': tokenId,
+        });
+        return;
+      }
+
+      if (verifyEmailOTP) {
+        Get.toNamed('/email-verification', arguments: {
+          'email': email,
+          'tokenId': tokenId,
+        });
+        return;
+      }
+
+      // If no OTP required, proceed to main/home
+      Get.offAllNamed('/main');
+    } on DioException catch (e, st) {
+      Logger.e('Register API error', error: e, stackTrace: st);
+      final message = e.response?.data is Map<String, dynamic>
+          ? ((e.response?.data as Map<String, dynamic>)['error'] ?? 'Network error').toString()
+          : 'Network error';
+      Get.snackbar('Register Failed', message);
+    } catch (e, st) {
+      Logger.e('Register unexpected error', error: e, stackTrace: st);
+      Get.snackbar('Register Failed', 'Unexpected error');
+    } finally {
+      isLoading.value = false;
+    }
   }
   
   // Google Sign Up
@@ -90,13 +186,13 @@ class RegisterController extends GetxController {
   
   // Navigate to Terms of Service
   void navigateToTermsOfService() {
-    // TODO: Implement navigation to Terms of Service
     Logger.i('Navigate to Terms of Service');
+    // Terms of Service page will be implemented
   }
   
   // Navigate to Privacy Policy
   void navigateToPrivacyPolicy() {
-    // TODO: Implement navigation to Privacy Policy
     Logger.i('Navigate to Privacy Policy');
+    // Privacy Policy page will be implemented
   }
 }

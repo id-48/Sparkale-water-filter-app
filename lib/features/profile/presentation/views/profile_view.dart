@@ -17,7 +17,7 @@ class ProfileView extends GetView<ProfileController> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -139,19 +139,19 @@ class ProfileView extends GetView<ProfileController> {
             color: AppColors.textPrimary,
           ),
         ),
-        const SizedBox(height: AppConstants.defaultPadding),
+        const SizedBox(height: AppConstants.smallLargePadding),
         _buildSettingsItem(
           iconPath: AppImages.profileIcon,
           title: Tr.personalInformation,
           onTap: () => controller.navigateToPersonalInfo(),
         ),
-        const SizedBox(height: AppConstants.defaultPadding),
+        const SizedBox(height: AppConstants.smallLargePadding),
         _buildSettingsItem(
           iconPath: AppImages.card,
           title: Tr.billingInformation,
           onTap: () => controller.navigateToBillingInfo(),
         ),
-        const SizedBox(height: AppConstants.defaultPadding),
+        const SizedBox(height: AppConstants.smallLargePadding),
         _buildSettingsItem(
           iconPath: AppImages.language,
           title: Tr.language,
@@ -193,7 +193,7 @@ class ProfileView extends GetView<ProfileController> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
+        padding: const EdgeInsets.all(AppConstants.smallLargePadding),
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(12),

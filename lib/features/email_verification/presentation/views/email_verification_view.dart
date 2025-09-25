@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:get/get.dart';
 import 'package:otp_pin_field/otp_pin_field.dart';
 import 'package:sparkle/core/utils/translation_helper.dart';
@@ -55,14 +54,14 @@ class EmailVerificationView extends GetView<EmailVerificationController> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            const Icon(
               Icons.arrow_back_outlined,
               color: AppColors.textSecondary,
-              size: 16,
+              size: 20,
             ),
-            SizedBox(width: 4),
+            const SizedBox(width: 4),
             Text(
-              Tr.back,
+              Tr.backToLogin,
               style: const TextStyle(
                 fontSize: AppConstants.mediumFontSize,
                 color: AppColors.textSecondary,

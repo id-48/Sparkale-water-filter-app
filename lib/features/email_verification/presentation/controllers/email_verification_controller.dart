@@ -1,13 +1,12 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/utils/logger.dart';
 
 class EmailVerificationController extends GetxController {
-  // OTP Controller for otp_pin_field
   final TextEditingController otpController = TextEditingController();
 
-  // Observable Variables
   final RxString userEmail = ''.obs;
   final RxBool isLoading = false.obs;
   final RxString otpError = ''.obs;

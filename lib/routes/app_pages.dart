@@ -9,12 +9,15 @@ import '../features/register/presentation/views/register_view.dart';
 import '../features/register/presentation/bindings/register_binding.dart';
 import '../features/email_verification/presentation/views/email_verification_view.dart';
 import '../features/email_verification/presentation/bindings/email_verification_binding.dart';
+import '../features/mobile_verification/presentation/views/mobile_verification_view.dart';
+import '../features/mobile_verification/presentation/bindings/mobile_verification_binding.dart';
 
 class AppPages {
   static const String splash = '/splash';
   static const String login = '/login';
   static const String register = '/register';
   static const String emailVerification = '/email-verification';
+  static const String mobileVerification = '/mobile-verification';
   static const String main = '/main';
   
   static final List<GetPage> routes = [
@@ -37,6 +40,11 @@ class AppPages {
       name: emailVerification,
       page: () => const EmailVerificationView(),
       binding: EmailVerificationBinding(),
+    ),
+    GetPage(
+      name: mobileVerification,
+      page: () => const MobileVerificationView(),
+      binding: MobileVerificationBinding(),
     ),
     GetPage(
       name: main,
