@@ -60,23 +60,35 @@ class SignupResponse {
 
 class VerifySignUpOtpRequest {
   final String tokenId;
-  final String mobileOtp;
+  final String? mobileOtp;
+  final String? emailOtp;
   final String reCaptchaToken;
   final String platform;
 
   VerifySignUpOtpRequest({
     required this.tokenId,
-    required this.mobileOtp,
+    this.mobileOtp,
+    this.emailOtp,
     required this.reCaptchaToken,
     required this.platform,
   });
 
-  Map<String, dynamic> toJson() => {
-        'tokenId': tokenId,
-        'mobileOtp': mobileOtp,
-        'reCaptchaToken': reCaptchaToken,
-        'platform': platform,
-      };
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> json = {
+      'tokenId': tokenId,
+      'reCaptchaToken': reCaptchaToken,
+      'platform': platform,
+    };
+    
+    if (mobileOtp != null) {
+      json['mobileOtp'] = mobileOtp;
+    }
+    if (emailOtp != null) {
+      json['emailOtp'] = emailOtp;
+    }
+    
+    return json;
+  }
 }
 
 class VerifySignUpOtpResponse {

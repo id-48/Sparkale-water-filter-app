@@ -218,17 +218,6 @@ class AppTheme {
         foregroundColor: AppColors.white,
         elevation: 4,
       ),
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.textPrimary,
-        contentTextStyle: GoogleFonts.inter(
-          color: AppColors.white,
-          fontSize: AppConstants.defaultFontSize,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
-        ),
-        behavior: SnackBarBehavior.floating,
-      ),
     );
   }
   

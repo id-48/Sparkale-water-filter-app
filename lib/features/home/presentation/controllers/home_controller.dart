@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import '../../../../core/utils/translation_helper.dart';
 import '../../../../core/utils/logger.dart';
+import '../../../../core/services/toast_service.dart';
 
 class HomeController extends GetxController {
   
@@ -19,11 +20,7 @@ class HomeController extends GetxController {
       await _loadInitialData();
     } catch (e) {
       Logger.e('Error initializing home', error: e);
-      Get.snackbar(
-        Tr.error,
-        Tr.unknownError,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.error(Tr.unknownError);
     } finally {
       isLoading.value = false;
     }

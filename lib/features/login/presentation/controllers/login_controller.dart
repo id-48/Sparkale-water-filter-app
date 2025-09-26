@@ -7,6 +7,7 @@ import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/services/api_client.dart';
 import '../../../../core/services/recaptcha_service.dart';
 import '../../../../core/services/token_storage_service.dart';
+import '../../../../core/services/toast_service.dart';
 
 class LoginController extends GetxController {
   // Text controllers
@@ -50,7 +51,7 @@ class LoginController extends GetxController {
   /// Send OTP to the provided email or mobile number
   void sendOtp() {
     if (emailController.text.trim().isEmpty) {
-      _showErrorSnackBar(
+      _showErrorToast(
         isEmailInput.value 
             ? AppStrings.pleaseEnterEmail 
             : AppStrings.pleaseEnterMobileNumber
@@ -59,7 +60,7 @@ class LoginController extends GetxController {
     }
     
     if (!_isValidInput()) {
-      _showErrorSnackBar(
+      _showErrorToast(
         isEmailInput.value 
             ? AppStrings.pleaseEnterValidEmail 
             : AppStrings.pleaseEnterValidMobileNumber
@@ -113,13 +114,7 @@ class LoginController extends GetxController {
         if (success && loginTokenId != null) {
           await _tokenStorage.saveLoginTokens('', loginTokenId);
           
-          Get.snackbar(
-            AppStrings.success,
-            AppStrings.otpSentSuccessfully,
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-          );
+          ToastService.success(AppStrings.otpSentSuccessfully);
           
           // Navigate to verification screen
           if (isEmailInput.value) {
@@ -135,15 +130,15 @@ class LoginController extends GetxController {
             });
           }
         } else {
-          _showErrorSnackBar(data['error'] ?? AppStrings.errorSendingOtp);
+          _showErrorToast(data['error'] ?? AppStrings.errorSendingOtp);
         }
       } else {
-        _showErrorSnackBar(AppStrings.errorSendingOtp);
+        _showErrorToast(AppStrings.errorSendingOtp);
       }
       
     } catch (e) {
       Logger.e('Error sending OTP', error: e);
-      _showErrorSnackBar(AppStrings.errorSendingOtp);
+      _showErrorToast(AppStrings.errorSendingOtp);
     } finally {
       isLoading.value = false;
     }
@@ -159,21 +154,14 @@ class LoginController extends GetxController {
       Logger.d('Google Sign-In initiated');
       
       // Show success message
-      Get.snackbar(
-        AppStrings.success,
-        AppStrings.googleSignInSuccess,
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
+      ToastService.success(AppStrings.googleSignInSuccess);
       
       // Navigate to home screen after successful login
       Get.offAllNamed('/main');
       
     } catch (e) {
       Logger.e('Error with Google Sign-In', error: e);
-      _showErrorSnackBar(AppStrings.googleSignInError);
+      _showErrorToast(AppStrings.googleSignInError);
     } finally {
       isLoading.value = false;
     }
@@ -185,15 +173,8 @@ class LoginController extends GetxController {
     Get.toNamed('/register');
   }
   
-  /// Show error snackbar
-  void _showErrorSnackBar(String message) {
-    Get.snackbar(
-      AppStrings.error,
-      message,
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-    );
+  /// Show error toast
+  void _showErrorToast(String message) {
+    ToastService.error(message);
   }
 }

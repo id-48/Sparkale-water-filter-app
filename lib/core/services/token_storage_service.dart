@@ -2,9 +2,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/logger.dart';
 
 class TokenStorageService {
-  TokenStorageService._internal();
-  static final TokenStorageService _instance = TokenStorageService._internal();
-  factory TokenStorageService() => _instance;
 
   static const String _jwtTokenKey = 'jwt_token';
   static const String _loginTokenKey = 'login_token';

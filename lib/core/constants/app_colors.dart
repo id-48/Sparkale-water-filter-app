@@ -27,9 +27,14 @@ class AppColors {
 
   // Status Colors
   static const Color success = Color(0xFF4CAF50);
+  static const Color successToastText = Color(0xFF027A48);
+  static const Color successToastBg = Color(0xFF6CE9A6);
   static const Color warning = Color(0xFFFF9800);
   static const Color error = Color(0xFFF44336);
+  static const Color errorToastBg = Color(0xFFF43F5E);
   static const Color info = Color(0xFF2196F3);
+
+
   
   // Background Colors
   static const Color background = Color(0xFFF8FAFC);

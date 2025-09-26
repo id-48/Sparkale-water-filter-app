@@ -6,6 +6,7 @@ import 'package:recaptcha_enterprise_flutter/recaptcha.dart';
 import 'package:recaptcha_enterprise_flutter/recaptcha_client.dart';
 import 'package:recaptcha_enterprise_flutter/recaptcha_enterprise.dart';
 import 'package:recaptcha_enterprise_flutter/recaptcha_action.dart';
+import 'toast_service.dart';
 
 class RecaptchaService {
 
@@ -26,7 +27,7 @@ class RecaptchaService {
       return token;
     } catch (e, st) {
       Logger.e('Recaptcha execute failed', error: e, stackTrace: st);
-      Get.snackbar('Security Check', 'Unable to verify reCAPTCHA');
+      ToastService.error('Unable to verify reCAPTCHA');
       rethrow;
     }
   }
@@ -45,7 +46,7 @@ class RecaptchaService {
       return token;
     } catch (e, st) {
       Logger.e('Recaptcha execute failed', error: e, stackTrace: st);
-      Get.snackbar('Security Check', 'Unable to verify reCAPTCHA');
+      ToastService.error('Unable to verify reCAPTCHA');
       rethrow;
     }
   }
@@ -64,7 +65,7 @@ class RecaptchaService {
       return token;
     } catch (e, st) {
       Logger.e('Login reCAPTCHA execute failed', error: e, stackTrace: st);
-      Get.snackbar('Security Check', 'Unable to verify reCAPTCHA');
+      ToastService.error('Unable to verify reCAPTCHA');
       rethrow;
     }
   }
@@ -83,7 +84,7 @@ class RecaptchaService {
       return token;
     } catch (e, st) {
       Logger.e('Login verification reCAPTCHA execute failed', error: e, stackTrace: st);
-      Get.snackbar('Security Check', 'Unable to verify reCAPTCHA');
+      ToastService.error('Unable to verify reCAPTCHA');
       rethrow;
     }
   }

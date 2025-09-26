@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sparkle/core/constants/app_colors.dart';
+import 'package:sparkle/features/home/presentation/views/home_view.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../profile/presentation/views/profile_view.dart';
 
@@ -26,18 +27,7 @@ class MainController extends GetxController {
   }
 
   Widget _buildHomePage() {
-    return Container(
-      color: AppColors.background,
-      child: const Center(
-        child: Text(
-          'Home Page',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
+    return const HomeView();
   }
 
   Widget _buildPhonePage() {

@@ -108,7 +108,7 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
           ),
         ),
         const Icon(
-          Icons.sms,
+          Icons.phone_android,
           color: AppColors.primary,
           size: 30,
         ),

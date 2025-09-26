@@ -7,6 +7,7 @@ import '../../../../core/services/api_client.dart';
 import '../../../../core/services/recaptcha_service.dart';
 import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/models/auth/signup_models.dart';
+import '../../../../core/services/toast_service.dart';
 
 class RegisterController extends GetxController {
   // Form Controllers
@@ -65,17 +66,54 @@ class RegisterController extends GetxController {
   Future<void> registerUser() async {
     if (isLoading.value) return;
     if (!isTermsAccepted.value) {
-      Get.snackbar('Terms', 'Please accept Terms & Conditions');
+      ToastService.error('Please accept Terms & Conditions');
       return;
+    }
+
+    // Validate form fields
+    final String firstName = firstNameController.text.trim();
+    final String lastName = lastNameController.text.trim();
+    final String email = emailController.text.trim();
+    final String mobile = phoneController.text.trim();
+
+    // Check required field validation
+    if (firstName.isEmpty) {
+      ToastService.error('First name is required');
+      return;
+    }
+
+    if (lastName.isEmpty) {
+      ToastService.error('Last name is required');
+      return;
+    }
+
+    // At least one of email or phone must be provided
+    if (email.isEmpty && mobile.isEmpty) {
+      ToastService.error('Email or phone number is required');
+      return;
+    }
+
+    if (email.isNotEmpty) {
+      // Validate email format if provided
+      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+      if (!emailRegex.hasMatch(email)) {
+        ToastService.error('Please enter a valid email address');
+        return;
+      }
+    }
+
+    if (mobile.isNotEmpty) {
+      // Validate phone format if provided
+      final phoneRegex = RegExp(r'^[+]?[0-9]{10,15}$');
+      if (!phoneRegex.hasMatch(mobile)) {
+        ToastService.error('Please enter a valid phone number');
+        return;
+      }
     }
 
     try {
       isLoading.value = true;
 
-      final String firstName = firstNameController.text.trim();
-      final String lastName = lastNameController.text.trim();
-      final String email = emailController.text.trim();
-      final String mobile = phoneController.text.trim();
       final String countryCode = selectedCountryCode.value.replaceAll('+', '');
 
       final String recaptchaToken = await RecaptchaService().generateSignUpToken();
@@ -104,8 +142,12 @@ class RegisterController extends GetxController {
 
       final signupResponse = SignupResponse.fromJson(data);
       if (!signupResponse.success) {
-        final String error = signupResponse.error.isNotEmpty ? signupResponse.error : 'Something went wrong';
-        Get.snackbar('Register Failed', error);
+        String errorMessage = signupResponse.error.isNotEmpty ? signupResponse.error : 'Something went wrong';
+        // Use reasonCode if available from response
+        if (signupResponse.reasonCode.isNotEmpty) {
+          errorMessage = signupResponse.reasonCode;
+        }
+        ToastService.error(errorMessage);
         return;
       }
 
@@ -116,13 +158,12 @@ class RegisterController extends GetxController {
       final String? tokenId = signupResponse.tokenId;
 
       if (verifyMobileNoOTP && verifyEmailOTP) {
-        await Get.toNamed('/mobile-verification', arguments: {
+        // First mobile, then email verification
+        Get.toNamed('/mobile-verification', arguments: {
           'mobile': mobile,
           'tokenId': tokenId,
-        });
-        await Get.toNamed('/email-verification', arguments: {
+          'needsEmailVerification': true,  // Flag to indicate email verification is needed
           'email': email,
-          'tokenId': tokenId,
         });
         return;
       }
@@ -147,13 +188,20 @@ class RegisterController extends GetxController {
       Get.offAllNamed('/main');
     } on DioException catch (e, st) {
       Logger.e('Register API error', error: e, stackTrace: st);
-      final message = e.response?.data is Map<String, dynamic>
-          ? ((e.response?.data as Map<String, dynamic>)['error'] ?? 'Network error').toString()
-          : 'Network error';
-      Get.snackbar('Register Failed', message);
+      String errorMessage = 'Network error';
+      
+      if (e.response?.data is Map<String, dynamic>) {
+        final data = e.response!.data as Map<String, dynamic>;
+        if (data['reasonCode'] != null && data['reasonCode'].toString().isNotEmpty) {
+          errorMessage = data['reasonCode'].toString();
+        } else if (data['error'] != null && data['error'].toString().isNotEmpty) {
+          errorMessage = data['error'].toString();
+        }
+      }
+      ToastService.error(errorMessage);
     } catch (e, st) {
       Logger.e('Register unexpected error', error: e, stackTrace: st);
-      Get.snackbar('Register Failed', 'Unexpected error');
+      ToastService.error('Unexpected error');
     } finally {
       isLoading.value = false;
     }

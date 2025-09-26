@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../utils/preference_utils.dart';
 import '../constants/app_constants.dart';
+import 'toast_service.dart';
 
 class JsonTranslationService extends GetxService {
   static JsonTranslationService get to => Get.find();
@@ -49,18 +50,9 @@ class JsonTranslationService extends GetxService {
       _currentLanguage.value = languageCode;
       await _loadTranslations(languageCode);
       await PreferenceUtils.setString(AppConstants.selectedLanguageKey, languageCode);
-      Get.snackbar(
-        getTranslation('success'),
-        getTranslation('languageChanged'),
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-      );
+      ToastService.success(getTranslation('languageChanged'));
     } catch (e) {
-      Get.snackbar(
-        getTranslation('error'),
-        getTranslation('unknownError'),
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.error(getTranslation('unknownError'));
     }
   }
   
