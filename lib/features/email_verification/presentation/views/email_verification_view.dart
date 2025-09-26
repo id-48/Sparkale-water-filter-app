@@ -60,14 +60,18 @@ class EmailVerificationView extends GetView<EmailVerificationController> {
               size: 20,
             ),
             const SizedBox(width: 4),
-            Text(
-              Tr.backToLogin,
-              style: const TextStyle(
-                fontSize: AppConstants.mediumFontSize,
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+            Obx(() {
+              return Text(
+                controller.flow == "register"
+                    ? Tr.backToRegister
+                    : Tr.backToLogin,
+                style: const TextStyle(
+                  fontSize: AppConstants.mediumFontSize,
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w400,
+                ),
+              );
+            }),
           ],
         ),
       ),
@@ -200,26 +204,12 @@ class EmailVerificationView extends GetView<EmailVerificationController> {
               ),
             ),
             autoFillEnable: true,
+            autoFocus: false,
             showCursor: true,
             keyboardType: TextInputType.number,
             onChange: (value) => controller.onOTPChanged(value),
-            onSubmit: (value) => controller.onOTPCompleted(value),
+            onSubmit: (String text) {},
           ),
-        ),
-
-        Obx(
-          () => controller.otpError.value.isNotEmpty
-              ? Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    controller.otpError.value,
-                    style: const TextStyle(
-                      color: AppColors.error,
-                      fontSize: 12,
-                    ),
-                  ),
-                )
-              : const SizedBox.shrink(),
         ),
       ],
     );
@@ -287,7 +277,7 @@ class EmailVerificationView extends GetView<EmailVerificationController> {
                 decoration: controller.canResend.value
                     ? TextDecoration.underline
                     : TextDecoration.none,
-                  decorationColor: AppColors.primary,
+                decorationColor: AppColors.primary,
               ),
             ),
           ),

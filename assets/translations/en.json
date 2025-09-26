@@ -27,6 +27,7 @@
   "loginTitle": "Login To Your Account",
   "loginSubtitle": "Welcome back! Please enter your details.",
   "backToLogin": "Back to log in",
+  "backToRegister": "Back to register",
   "verifyEmail": "Verify your email id",
   "verifyMono": "Verify your number",
   "enterCodeEmail": "Enter the code we've sent to your email address in ",

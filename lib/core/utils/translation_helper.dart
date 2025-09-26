@@ -36,6 +36,7 @@ class Tr {
   static String get loginSubtitle => T.get('loginSubtitle');
   static String get back => T.get('back');
   static String get backToLogin => T.get('backToLogin');
+  static String get backToRegister => T.get('backToRegister');
   static String get verifyEmail => T.get('verifyEmail');
   static String get verifyMono => T.get('verifyMono');
   static String get enterCodeEmail => T.get('enterCodeEmail');

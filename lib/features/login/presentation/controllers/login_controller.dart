@@ -121,12 +121,15 @@ class LoginController extends GetxController {
             Get.toNamed('/email-verification', arguments: {
               'email': emailController.text.trim(),
               'loginTokenId': loginTokenId,
+              'flow':'login'
             });
           } else {
             Get.toNamed('/mobile-verification', arguments: {
               'mobileNo': emailController.text.trim(),
-              'countryCode': selectedCountry.value.dialCode,
+              'countryCode': selectedCountry.value.dialCode??"",
               'loginTokenId': loginTokenId,
+              'flow':'login'
+
             });
           }
         } else {

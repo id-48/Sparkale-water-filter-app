@@ -19,11 +19,14 @@ class MobileVerificationController extends GetxController {
   final RxBool needsEmailVerification = false.obs;
   final RxString userEmail = ''.obs;
   final RxBool isLoading = false.obs;
-  final RxString otpError = ''.obs;
   final RxBool canResend = true.obs;
   final RxInt resendCountdown = 0.obs;
   final RxString currentOTP = ''.obs;
-  
+  RxString flow = ''.obs;
+  Map<String, dynamic>? arguments = Get.arguments as Map<String, dynamic>?;
+
+
+
   // Services
   final ApiClient _apiClient = ApiClient();
   final RecaptchaService _recaptchaService = RecaptchaService();
@@ -36,6 +39,8 @@ class MobileVerificationController extends GetxController {
   void onInit() {
     super.onInit();
     _initializeMobile();
+    flow.value = arguments?["flow"] ?? "";
+    print("flow==== $flow");
     Logger.i('MobileVerificationController initialized');
   }
 
@@ -62,15 +67,8 @@ class MobileVerificationController extends GetxController {
 
   void onOTPChanged(String value) {
     currentOTP.value = value;
-    otpError.value = '';
   }
 
-  void onOTPCompleted(String value) {
-    otpError.value = '';
-    if (value.length == 6) {
-      _verifyOTP(value);
-    }
-  }
 
   String _getOTP() {
     return currentOTP.value;
@@ -78,32 +76,26 @@ class MobileVerificationController extends GetxController {
 
   Future<void> _verifyOTP(String otp) async {
     if (otp.length != 6) {
-      otpError.value = 'Please enter a valid 6-digit OTP';
-      return;
-    }
-    
-    if (tokenId.value.isEmpty) {
-      otpError.value = 'Token not found';
+      ToastService.error('Please enter a valid 6-digit OTP');
       return;
     }
     
     try {
       isLoading.value = true;
-      
-      // Check if this is a signup flow by looking at current route
       final bool isSignUpFlow = Get.currentRoute.contains('mobile-verification');
       
       if (isSignUpFlow) {
-        // Use verifySignUpOtp API for signup flow
+        if(needsEmailVerification.value){
+          _checkNextVerificationStep();
+        }else{
         await _verifySignUpOTP(otp);
+        }
       } else {
-        // Use verifyLogin API for login flow
         await _verifyLoginOTP(otp);
       }
       
     } catch (e) {
       Logger.e('Error verifying mobile OTP', error: e);
-      otpError.value = 'Verification failed';
     } finally {
       isLoading.value = false;
     }
@@ -111,7 +103,9 @@ class MobileVerificationController extends GetxController {
 
   Future<void> _verifySignUpOTP(String otp) async {
     try {
-      final reCaptchaToken = await _recaptchaService.generateSignUpToken();
+
+
+      final reCaptchaToken = await _recaptchaService.generateSignUpVerificationToken();
       
       final VerifySignUpOtpRequest request = VerifySignUpOtpRequest(
         tokenId: tokenId.value,
@@ -138,24 +132,16 @@ class MobileVerificationController extends GetxController {
           errorMessage = verifySignUpOtpResponse.reasonCode;
         }
         ToastService.error(errorMessage);
-        otpError.value = errorMessage;
         return;
       }
 
       // If successful and it returns loginToken/loginTokenId, call verifyLogin
       if (verifySignUpOtpResponse.loginToken != null && verifySignUpOtpResponse.loginTokenId != null) {
         await _verifyLoginWithTokens(verifySignUpOtpResponse.loginToken!, verifySignUpOtpResponse.loginTokenId!);
-      } else {
-        // Show success and navigate to next verification or check if email verification needed
-        // Based on signup response, determine next step
-        ToastService.success('Mobile verification successful');
-        // Check if we need to navigate to email verification or proceed to main
-        _checkNextVerificationStep();
       }
       
     } catch (e) {
       Logger.e('Error verifying signup OTP', error: e);
-      otpError.value = 'Verification failed';
     }
   }
 
@@ -184,19 +170,18 @@ class MobileVerificationController extends GetxController {
         
         if (success && token != null) {
           await _tokenStorage.saveJWTToken(token);
+          ToastService.success('Mobile verification completed successfully');
           Get.offAllNamed('/main');
         } else {
           final errorMessage = data['reasonCode']?.toString() ?? data['error']?.toString() ?? 'Verification failed';
-          otpError.value = errorMessage;
           ToastService.error(errorMessage);
         }
       } else {
-        otpError.value = 'Verification failed';
         ToastService.error('Verification failed');
       }
     } catch (e) {
       Logger.e('Error verifying login OTP', error: e);
-      otpError.value = 'Verification failed';
+      ToastService.error('Verification failed');
     }
   }
 
@@ -222,30 +207,29 @@ class MobileVerificationController extends GetxController {
         
         if (success && token != null) {
           await _tokenStorage.saveJWTToken(token);
+          ToastService.success(success);
           Get.offAllNamed('/main');
         } else {
           final errorMessage = data['reasonCode']?.toString() ?? data['error']?.toString() ?? 'Login verification failed';
           ToastService.error(errorMessage);
-          otpError.value = errorMessage;
         }
       } else {
         ToastService.error('Login verification failed');
-        otpError.value = 'Login verification failed';
       }
     } catch (e) {
       Logger.e('Error verifying login with tokens', error: e);
-      otpError.value = 'Login verification failed';
       ToastService.error('Login verification failed');
     }
   }
 
+
   void _checkNextVerificationStep() {
-    // Check if we need to navigate to email verification
     if (needsEmailVerification.value && userEmail.value.isNotEmpty) {
-      // Navigate to email verification
       Get.offNamed('/email-verification', arguments: {
         'email': userEmail.value,
         'tokenId': tokenId.value,
+        'mobile': userMobile.value,
+        'flow':'login'
       });
     } else {
       Get.offAllNamed('/main');
@@ -257,7 +241,7 @@ class MobileVerificationController extends GetxController {
     if (otp.length == 6) {
       await _verifyOTP(otp);
     } else {
-      otpError.value = 'Please enter the complete OTP';
+      ToastService.error('Please enter the complete OTP');
     }
   }
 

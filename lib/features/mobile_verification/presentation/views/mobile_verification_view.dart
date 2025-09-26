@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:otp_pin_field/otp_pin_field.dart';
+import 'package:sparkle/core/utils/logger.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_images.dart';
@@ -60,14 +61,16 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
               size: 20,
             ),
             const SizedBox(width: 4),
-            Text(
-              Tr.backToLogin,
-              style: const TextStyle(
-                fontSize: AppConstants.mediumFontSize,
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+            Obx(() {
+              return Text(
+                controller.flow == "register" ? Tr.backToRegister : Tr.backToLogin,
+                style: const TextStyle(
+                  fontSize: AppConstants.mediumFontSize,
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w400,
+                ),
+              );
+            }),
           ],
         ),
       ),
@@ -107,17 +110,13 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
             color: AppColors.primary.withValues(alpha: 0.1),
           ),
         ),
-        const Icon(
-          Icons.phone_android,
-          color: AppColors.primary,
-          size: 30,
-        ),
+        const Icon(Icons.phone_android, color: AppColors.primary, size: 30),
       ],
     );
   }
 
   Widget _buildTitleSection() {
-    return  Text(
+    return Text(
       Tr.verifyMono,
       style: const TextStyle(
         fontSize: AppConstants.titleFontSize,
@@ -139,7 +138,7 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
             fontWeight: FontWeight.w400,
           ),
           children: [
-             TextSpan(
+            TextSpan(
               text: Tr.enterCodeMo,
               style: const TextStyle(
                 fontWeight: FontWeight.w400,
@@ -178,6 +177,7 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
             maxLength: 6,
             fieldWidth: 37,
             fieldHeight: 40,
+            autoFocus: false,
             cursorColor: AppColors.primary,
             highlightBorder: false,
             otpPinFieldStyle: const OtpPinFieldStyle(
@@ -199,10 +199,9 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
             showCursor: true,
             keyboardType: TextInputType.number,
             onChange: (value) => controller.onOTPChanged(value),
-            onSubmit: (value) => controller.onOTPCompleted(value),
+            onSubmit: (String text) {},
           ),
         ),
-
       ],
     );
   }
@@ -278,5 +277,3 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
     );
   }
 }
-
-

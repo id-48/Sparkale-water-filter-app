@@ -15,8 +15,7 @@ class CustomToast {
     final context = Get.overlayContext;
     if (context == null) return;
 
-    _currentToast?.remove();
-    _currentToast = null;
+    _dismissCurrentToast();
 
     _currentToast = _showToast(context, message, type, duration);
     Overlay.of(context).insert(_currentToast!);
@@ -35,18 +34,29 @@ class CustomToast {
         message: message,
         type: type,
         onDismiss: () {
-          _currentToast?.remove();
-          _currentToast = null;
+          _dismissCurrentToast();
         },
       ),
     );
 
     Future.delayed(duration, () {
-      overlayEntry.remove();
-      _currentToast = null;
+      if (_currentToast == overlayEntry && _currentToast != null) {
+        _dismissCurrentToast();
+      }
     });
 
     return overlayEntry;
+  }
+
+  static void _dismissCurrentToast() {
+    if (_currentToast != null) {
+      try {
+        _currentToast?.remove();
+      } catch (e) {
+        // Avoid exception if overlay already removed
+      }
+      _currentToast = null;
+    }
   }
 
   static void success(String message) {
@@ -148,16 +158,16 @@ class _ToastWidget extends StatelessWidget {
       case ToastType.success:
         return AppColors.successToastText;
       case ToastType.error:
-        return AppColors.errorToastBg;
+        return AppColors.error;
     }
   }
 
   Color _getToastBackgroundColor() {
     switch (type) {
       case ToastType.success:
-        return AppColors.successToastBg.withOpacity(0.1);
+        return AppColors.successToastBg;
       case ToastType.error:
-        return AppColors.errorToastBg.withOpacity(0.1);
+        return AppColors.errorToastBg;
     }
   }
 

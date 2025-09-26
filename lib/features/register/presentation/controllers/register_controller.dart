@@ -151,19 +151,21 @@ class RegisterController extends GetxController {
         return;
       }
 
+      // Show success toast
+      ToastService.success('Code Send Successfully.');
+
       final bool verifyMobileNoOTP = signupResponse.verifyMobileNoOTP;
       final bool verifyEmailOTP = signupResponse.verifyEmailOTP;
 
-      // Navigate per rules
-      final String? tokenId = signupResponse.tokenId;
+      final String tokenId = signupResponse.tokenId ??"";
 
       if (verifyMobileNoOTP && verifyEmailOTP) {
-        // First mobile, then email verification
         Get.toNamed('/mobile-verification', arguments: {
           'mobile': mobile,
           'tokenId': tokenId,
-          'needsEmailVerification': true,  // Flag to indicate email verification is needed
+          'needsEmailVerification': true,
           'email': email,
+          'flow':'register'
         });
         return;
       }
@@ -172,6 +174,7 @@ class RegisterController extends GetxController {
         Get.toNamed('/mobile-verification', arguments: {
           'mobile': mobile,
           'tokenId': tokenId,
+          'flow': 'register'
         });
         return;
       }
@@ -180,12 +183,11 @@ class RegisterController extends GetxController {
         Get.toNamed('/email-verification', arguments: {
           'email': email,
           'tokenId': tokenId,
+          'flow':'register'
         });
         return;
       }
 
-      // If no OTP required, proceed to main/home
-      Get.offAllNamed('/main');
     } on DioException catch (e, st) {
       Logger.e('Register API error', error: e, stackTrace: st);
       String errorMessage = 'Network error';
