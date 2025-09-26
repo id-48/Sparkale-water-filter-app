@@ -129,7 +129,7 @@ class LoginView extends GetView<LoginController> {
                 : Tr.enterPhoneNumber,
             keyboardType: controller.isEmailInput.value
                 ? TextInputType.emailAddress
-                : TextInputType.phone,
+                : TextInputType.emailAddress,
             prefixIcon: controller.isEmailInput.value
                 ? null
                 : CountryCodePicker(
