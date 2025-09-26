@@ -84,7 +84,6 @@ class LoginController extends GetxController {
     }
   }
   
-  /// Perform the actual OTP sending logic
   void _performSendOtp() async {
     try {
       isLoading.value = true;

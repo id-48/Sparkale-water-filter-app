@@ -42,10 +42,10 @@ class RegisterView extends GetView<RegisterController> {
                 _buildTermsAndConditionsSection(),
                 SizedBox(height: screenHeight * 0.06),
                 _buildSignUpButton(),
-                SizedBox(height: screenHeight * 0.03),
-                _buildDivider(),
-                SizedBox(height: screenHeight * 0.03),
-                _buildGoogleSignUpButton(),
+                // SizedBox(height: screenHeight * 0.03),
+                // _buildDivider(),
+                // SizedBox(height: screenHeight * 0.03),
+                // _buildGoogleSignUpButton(),
                 SizedBox(height: screenHeight * 0.06),
                 _buildSignInLink(),
                 SizedBox(height: screenHeight * 0.05),
@@ -122,7 +122,7 @@ class RegisterView extends GetView<RegisterController> {
       keyboardType: TextInputType.phone,
       prefixIcon: CountryCodePicker(
         onChanged: controller.onCountryChanged,
-        initialSelection: 'IN',
+        initialSelection: 'IN', // This should match with controller default
         favorite: const ['+91', 'IN'],
         showCountryOnly: false,
         showOnlyCountryWhenClosed: false,

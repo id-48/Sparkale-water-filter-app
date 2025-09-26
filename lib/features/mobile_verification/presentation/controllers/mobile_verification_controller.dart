@@ -166,9 +166,9 @@ class MobileVerificationController extends GetxController {
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data!;
         final success = data['success'] ?? false;
-        final token = data['token'];
+        final token = data['token']?.toString();
         
-        if (success && token != null) {
+        if (success && token != null && token.isNotEmpty) {
           await _tokenStorage.saveJWTToken(token);
           ToastService.success('Mobile verification completed successfully');
           Get.offAllNamed('/main');
@@ -203,11 +203,11 @@ class MobileVerificationController extends GetxController {
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data!;
         final success = data['success'] ?? false;
-        final token = data['token'];
+        final token = data['token']?.toString();
         
-        if (success && token != null) {
+        if (success && token != null && token.isNotEmpty) {
           await _tokenStorage.saveJWTToken(token);
-          ToastService.success(success);
+          ToastService.success('Login successful');
           Get.offAllNamed('/main');
         } else {
           final errorMessage = data['reasonCode']?.toString() ?? data['error']?.toString() ?? 'Login verification failed';

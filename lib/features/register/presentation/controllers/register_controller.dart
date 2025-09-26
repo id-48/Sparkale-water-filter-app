@@ -10,28 +10,26 @@ import '../../../../core/models/auth/signup_models.dart';
 import '../../../../core/services/toast_service.dart';
 
 class RegisterController extends GetxController {
-  // Form Controllers
+
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
   
-  // Form Key
   GlobalKey<FormState> get formKey => _formKey;
   late final GlobalKey<FormState> _formKey;
   
-  // Observable Variables
   final RxBool isTermsAccepted = false.obs;
   final RxBool isLoading = false.obs;
-  final RxString selectedCountryCode = '+1'.obs;
-  final RxString selectedCountryFlag = '🇺🇸'.obs;
+  final RxString selectedCountryCode = '+91'.obs; // Changed default to +91 to match CountryCodePicker initialSelection
+  final RxString selectedCountryFlag = '🇮🇳'.obs; // Changed flag to match India
   
-  
+ 
   @override
   void onInit() {
     super.onInit();
     _formKey = GlobalKey<FormState>(debugLabel: 'RegisterForm_${DateTime.now().millisecondsSinceEpoch}');
-    Logger.i('RegisterController initialized');
+    Logger.i('RegisterController initialized with default country code: ${selectedCountryCode.value}');
   }
   
   @override
@@ -43,11 +41,15 @@ class RegisterController extends GetxController {
     super.onClose();
   }
   
-  // Country Code Selection
   void onCountryChanged(CountryCode countryCode) {
-    selectedCountryCode.value = countryCode.dialCode ?? '+1';
-    selectedCountryFlag.value = countryCode.flagUri ?? '🇺🇸';
-    Logger.d('Country changed to: ${countryCode.name} ${countryCode.dialCode}');
+    final String newCountryCode = countryCode.dialCode ?? '+91';
+    final String newCountryFlag = countryCode.flagUri ?? '🇮🇳';
+    
+    selectedCountryCode.value = newCountryCode;
+    selectedCountryFlag.value = newCountryFlag;
+    
+    Logger.d('Country changed to: ${countryCode.name} (${countryCode.dialCode}) - Code: $newCountryCode, Flag: $newCountryFlag');
+    Logger.i('Selected country code updated to: ${selectedCountryCode.value}');
   }
   
   // Terms and Conditions Toggle
@@ -115,6 +117,7 @@ class RegisterController extends GetxController {
       isLoading.value = true;
 
       final String countryCode = selectedCountryCode.value.replaceAll('+', '');
+      Logger.d('Using country code for API: $countryCode (from selected: ${selectedCountryCode.value})');
 
       final String recaptchaToken = await RecaptchaService().generateSignUpToken();
 
@@ -130,6 +133,7 @@ class RegisterController extends GetxController {
       );
 
       Logger.api('Register request', endpoint: ApiEndpoints.signup, data: request.toJson());
+      Logger.d('API Request - Country Code sent: $countryCode for mobile: $mobile');
 
       final response = await ApiClient().postJson<Map<String, dynamic>>(
         ApiEndpoints.signup,
@@ -162,6 +166,7 @@ class RegisterController extends GetxController {
       if (verifyMobileNoOTP && verifyEmailOTP) {
         Get.toNamed('/mobile-verification', arguments: {
           'mobile': mobile,
+          'countryCode': countryCode, // Add country code to navigation
           'tokenId': tokenId,
           'needsEmailVerification': true,
           'email': email,
@@ -173,6 +178,7 @@ class RegisterController extends GetxController {
       if (verifyMobileNoOTP) {
         Get.toNamed('/mobile-verification', arguments: {
           'mobile': mobile,
+          'countryCode': countryCode, // Add country code to navigation
           'tokenId': tokenId,
           'flow': 'register'
         });

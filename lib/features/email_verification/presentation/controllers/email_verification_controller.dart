@@ -196,9 +196,9 @@ class EmailVerificationController extends GetxController {
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data!;
         final success = data['success'] ?? false;
-        final token = data['token'];
+        final token = data['token']?.toString();
 
-        if (success && token != null) {
+        if (success && token != null && token.isNotEmpty) {
           await _tokenStorage.saveJWTToken(token);
           ToastService.success('Email verification successful');
           Get.offAllNamed('/main');
@@ -239,9 +239,9 @@ class EmailVerificationController extends GetxController {
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data!;
         final success = data['success'] ?? false;
-        final token = data['token'];
+        final token = data['token']?.toString();
 
-        if (success && token != null) {
+        if (success && token != null && token.isNotEmpty) {
           await _tokenStorage.saveJWTToken(token);
           ToastService.success('Account created successfully');
           Get.offAllNamed('/main');

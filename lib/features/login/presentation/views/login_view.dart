@@ -32,10 +32,10 @@ class LoginView extends GetView<LoginController> {
               _buildEmailInputSection(),
               SizedBox(height: screenHeight * 0.03),
               _buildSendOtpButton(),
-              SizedBox(height: screenHeight * 0.03),
-              _buildDivider(),
-              SizedBox(height: screenHeight * 0.03),
-              _buildGoogleSignInButton(),
+              // SizedBox(height: screenHeight * 0.03),
+              // _buildDivider(),
+              // SizedBox(height: screenHeight * 0.03),
+              // _buildGoogleSignInButton(),
               SizedBox(height: screenHeight * 0.06),
               _buildSignUpLink(),
             ],
@@ -235,49 +235,49 @@ class LoginView extends GetView<LoginController> {
     );
   }
 
-  Widget _buildGoogleSignInButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: OutlinedButton(
-        onPressed: controller.signInWithGoogle,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: AppColors.white,
-          foregroundColor: AppColors.textSecondary,
-          side: const BorderSide(color: AppColors.border),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 20,
-              height: 20,
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(
-                    'https://developers.google.com/identity/images/g-logo.png',
-                  ),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            const SizedBox(width: AppConstants.defaultPadding),
-             Text(
-              Tr.signInWithGoogle,
-              style: const TextStyle(
-                fontSize: AppConstants.mediumFontSize,
-                fontWeight: FontWeight.w400,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildGoogleSignInButton() {
+  //   return SizedBox(
+  //     width: double.infinity,
+  //     height: 56,
+  //     child: OutlinedButton(
+  //       onPressed: controller.signInWithGoogle,
+  //       style: OutlinedButton.styleFrom(
+  //         backgroundColor: AppColors.white,
+  //         foregroundColor: AppColors.textSecondary,
+  //         side: const BorderSide(color: AppColors.border),
+  //         shape: RoundedRectangleBorder(
+  //           borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
+  //         ),
+  //       ),
+  //       child: Row(
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children: [
+  //           Container(
+  //             width: 20,
+  //             height: 20,
+  //             decoration: const BoxDecoration(
+  //               image: DecorationImage(
+  //                 image: NetworkImage(
+  //                   'https://developers.google.com/identity/images/g-logo.png',
+  //                 ),
+  //                 fit: BoxFit.cover,
+  //               ),
+  //             ),
+  //           ),
+  //           const SizedBox(width: AppConstants.defaultPadding),
+  //            Text(
+  //             Tr.signInWithGoogle,
+  //             style: const TextStyle(
+  //               fontSize: AppConstants.mediumFontSize,
+  //               fontWeight: FontWeight.w400,
+  //               color: AppColors.textSecondary,
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildSignUpLink() {
     return Row(
