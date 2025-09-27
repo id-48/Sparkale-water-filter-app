@@ -27,7 +27,6 @@ class LanguageSelectionDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -51,7 +50,6 @@ class LanguageSelectionDialog extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             
-            // Language options
             ...translationService.availableLanguages.map((language) {
               final isSelected = translationService.currentLanguage == language['code'];
               
@@ -77,7 +75,6 @@ class LanguageSelectionDialog extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      // Language flag/icon
                       Container(
                         width: 32,
                         height: 32,
@@ -100,7 +97,6 @@ class LanguageSelectionDialog extends StatelessWidget {
                       ),
                       const SizedBox(width: 16),
                       
-                      // Language name
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,7 +122,6 @@ class LanguageSelectionDialog extends StatelessWidget {
                         ),
                       ),
                       
-                      // Selection indicator
                       if (isSelected)
                         const Icon(
                           Icons.check_circle,

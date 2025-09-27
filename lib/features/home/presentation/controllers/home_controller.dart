@@ -27,7 +27,6 @@ class HomeController extends GetxController {
   }
   
   Future<void> _loadInitialData() async {
-    // Load initial data here
   }
   
   Future<void> refreshData() async {

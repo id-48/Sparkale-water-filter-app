@@ -9,7 +9,6 @@ import '../../../profile/presentation/controllers/profile_controller.dart';
 class MainController extends GetxController {
   final RxInt currentIndex = 0.obs;
   
-  // Pages for bottom navigation
   late final List<Widget> pages;
 
   @override
@@ -21,7 +20,6 @@ class MainController extends GetxController {
   }
 
   void _preloadProfileData() {
-    // Pre-load profile data in background
     Logger.d('Pre-loading profile data');
     Get.find<ProfileController>().refreshProfile();
   }

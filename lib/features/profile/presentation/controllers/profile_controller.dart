@@ -11,7 +11,6 @@ class ProfileController extends GetxController {
   final RxBool isProfileLoading = false.obs;
   final AuthService _authService = AuthService();
   
-  // Profile data
   final Rx<Customer?> customer = Rx<Customer?>(null);
 
   @override
@@ -37,7 +36,6 @@ class ProfileController extends GetxController {
       
     } catch (e, st) {
       Logger.e('Error fetching profile data', error: e, stackTrace: st);
-      // Don't show toast for profile fetch errors as per requirement
     } finally {
       isProfileLoading.value = false;
     }
@@ -62,14 +60,12 @@ class ProfileController extends GetxController {
       isLoading.value = true;
       Logger.d('Sign out requested');
       
-      // Call logout API
       final logoutResponse = await _authService.logout();
       
       if (logoutResponse.success) {
         Logger.d('Logout successful');
         ToastService.success('Log out successfully');
         
-        // Navigate to login screen
         Get.offAllNamed('/login');
       } else {
         Logger.w('Logout failed: ${logoutResponse.error}');
@@ -81,19 +77,15 @@ class ProfileController extends GetxController {
       
     } catch (e, st) {
       Logger.e('Error during logout', error: e, stackTrace: st);
-      
-      // Use centralized error handler
       final errorMessage = ApiErrorHandler.handleError(e);
       ToastService.error(errorMessage);
       
-      // Even if API fails, clear local tokens and navigate to login
       try {
         await _authService.clearLocalTokens();
         Logger.d('Local tokens cleared after logout error');
         Get.offAllNamed('/login');
       } catch (clearError) {
         Logger.e('Failed to clear local tokens', error: clearError);
-        // Still navigate to login even if clearing tokens fails
         Get.offAllNamed('/login');
       }
     } finally {
@@ -104,7 +96,6 @@ class ProfileController extends GetxController {
   void showLanguageDialog() {
     Logger.d('Show language selection dialog');
     
-    // Check if we have a valid context
     if (Get.context != null) {
       Get.dialog(
         const LanguageSelectionDialog(),

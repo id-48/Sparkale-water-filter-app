@@ -10,7 +10,6 @@ class ApiClient {
             connectTimeout: const Duration(seconds: 20),
             receiveTimeout: const Duration(seconds: 20),
             headers: {"Content-Type": "application/json"},
-            // Allow reading body for non-2xx responses (e.g., 401 with JSON error)
             validateStatus: (status) => true,
           ),
         ) {
@@ -92,12 +91,8 @@ class ApiClient {
     Map<String, dynamic>? headers,
   }) async {
     try {
-      Logger.api(
-        'Making GET request to: $path',
-        endpoint: path,
-      );
+      Logger.api('Making GET request to: $path', endpoint: path,);
 
-      // Create options with headers if provided
       final requestOptions = options ?? Options();
       if (headers != null) {
         requestOptions.headers = headers;

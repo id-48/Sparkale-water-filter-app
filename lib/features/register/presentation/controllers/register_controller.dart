@@ -19,10 +19,9 @@ class RegisterController extends GetxController {
   
   final RxBool isTermsAccepted = false.obs;
   final RxBool isLoading = false.obs;
-  final RxString selectedCountryCode = '+91'.obs; // Changed default to +91 to match CountryCodePicker initialSelection
-  final RxString selectedCountryFlag = '🇮🇳'.obs; // Changed flag to match India
+  final RxString selectedCountryCode = '+91'.obs;
+  final RxString selectedCountryFlag = '🇮🇳'.obs;
   
-  // Services
   final AuthService _authService = AuthService();
 
   @override
@@ -52,7 +51,6 @@ class RegisterController extends GetxController {
     Logger.i('Selected country code updated to: ${selectedCountryCode.value}');
   }
   
-  // Terms and Conditions Toggle
   void toggleTermsAcceptance() {
     isTermsAccepted.value = !isTermsAccepted.value;
     Logger.d('Terms acceptance toggled: ${isTermsAccepted.value}');
@@ -64,7 +62,6 @@ class RegisterController extends GetxController {
   }
 
   
-  // Register User
   Future<void> registerUser() async {
     if (isLoading.value) return;
     if (!isTermsAccepted.value) {
@@ -72,13 +69,11 @@ class RegisterController extends GetxController {
       return;
     }
 
-    // Validate form fields
     final String firstName = firstNameController.text.trim();
     final String lastName = lastNameController.text.trim();
     final String email = emailController.text.trim();
     final String mobile = phoneController.text.trim();
 
-    // Check required field validation
     if (firstName.isEmpty) {
       ToastService.error('First name is required');
       return;
@@ -89,14 +84,12 @@ class RegisterController extends GetxController {
       return;
     }
 
-    // At least one of email or phone must be provided
     if (email.isEmpty && mobile.isEmpty) {
       ToastService.error('Email or phone number is required');
       return;
     }
 
     if (email.isNotEmpty) {
-      // Validate email format if provided
       final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
       if (!emailRegex.hasMatch(email)) {
         ToastService.error('Please enter a valid email address');
@@ -105,7 +98,6 @@ class RegisterController extends GetxController {
     }
 
     if (mobile.isNotEmpty) {
-      // Validate phone format if provided
       final phoneRegex = RegExp(r'^[+]?[0-9]{10,15}$');
       if (!phoneRegex.hasMatch(mobile)) {
         ToastService.error('Please enter a valid phone number');
@@ -119,13 +111,11 @@ class RegisterController extends GetxController {
       final String countryCode = selectedCountryCode.value.replaceAll('+', '');
       Logger.d('Starting registration process for: $firstName $lastName');
 
-      // Determine which field to use for signup
       String mobileNoForApi = '';
       if (mobile.isNotEmpty) {
         mobileNoForApi = mobile;
       } else if (email.isNotEmpty) {
-        // If only email provided but no phone, use email
-        mobileNoForApi = ''; // Will be managed by API if needed
+        mobileNoForApi = '';
       }
 
       // Determine platform
@@ -147,9 +137,7 @@ class RegisterController extends GetxController {
         Logger.d('Code Send Successfully');
         ToastService.success('Code Send Successfully');
 
-        // Navigate based on signup response
         if (signupResponse.verifyMobileNoOTP && signupResponse.verifyEmailOTP) {
-          // Both email and mobile verification needed
           Get.toNamed('/mobile-verification', arguments: {
             'mobile': mobile,
             'countryCode': countryCode,
@@ -159,7 +147,6 @@ class RegisterController extends GetxController {
             'flow': 'register'
           });
         } else if (signupResponse.verifyMobileNoOTP && mobile.isNotEmpty) {
-          // Only mobile verification needed
           Get.toNamed('/mobile-verification', arguments: {
             'mobile': mobile,
             'countryCode': countryCode,
@@ -167,7 +154,6 @@ class RegisterController extends GetxController {
             'flow': 'register'
           });
         } else if (signupResponse.verifyEmailOTP && email.isNotEmpty) {
-          // Only email verification needed
           Get.toNamed('/email-verification', arguments: {
             'email': email,
             'tokenId': signupResponse.tokenId,
@@ -184,8 +170,6 @@ class RegisterController extends GetxController {
 
     } catch (e, st) {
       Logger.e('Registration error', error: e, stackTrace: st);
-      
-      // Use centralized error handler
       final errorMessage = ApiErrorHandler.handleError(e);
       ToastService.error(errorMessage);
     } finally {
@@ -193,17 +177,14 @@ class RegisterController extends GetxController {
     }
   }
   
-  // Google Sign Up
   Future<void> signUpWithGoogle() async {
     try {
       isLoading.value = true;
       
-      // Simulate Google Sign Up
       await Future.delayed(const Duration(seconds: 2));
       
       Logger.i('Google Sign Up successful');
       
-      // Navigate to home
       Get.offAllNamed('/main');
       
     } catch (e) {
@@ -213,20 +194,15 @@ class RegisterController extends GetxController {
     }
   }
   
-  // Navigate to Login
   void navigateToLogin() {
     Get.back();
   }
   
-  // Navigate to Terms of Service
   void navigateToTermsOfService() {
     Logger.i('Navigate to Terms of Service');
-    // Terms of Service page will be implemented
   }
   
-  // Navigate to Privacy Policy
   void navigateToPrivacyPolicy() {
     Logger.i('Navigate to Privacy Policy');
-    // Privacy Policy page will be implemented
   }
 }

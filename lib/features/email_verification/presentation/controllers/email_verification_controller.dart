@@ -24,8 +24,6 @@ class EmailVerificationController extends GetxController {
   final RxString currentOTP = ''.obs;
   Map<String, dynamic>? arguments = Get.arguments as Map<String, dynamic>?;
 
-
-  // Services for API calls
   final AuthService _authService = AuthService();
   final TokenStorageService _tokenStorageService = TokenStorageService();
 
@@ -37,23 +35,18 @@ class EmailVerificationController extends GetxController {
     _initializeEmail();
 
     flow.value = arguments?["flow"] ?? "";
-    print("flow==== $flow");
     Logger.i('EmailVerificationController initialized');
   }
 
   @override
   void onClose() {
-    // Dispose controller
     otpController.dispose();
-
-    // Cancel timers
     _resendTimer?.cancel();
 
     super.onClose();
   }
 
   void _initializeEmail() {
-    // Get email and tokenId or loginTokenId from arguments
     final arguments = Get.arguments;
     if (arguments != null && arguments is Map<String, dynamic>) {
       userEmail.value = arguments['email'] ?? '';
@@ -89,7 +82,6 @@ class EmailVerificationController extends GetxController {
       isLoading.value = true;
       Logger.d('Starting email OTP verification for: ${userEmail.value}');
 
-      // Check if this is a signup flow or login flow
       if (flow.value == 'register') {
         await _verifySignupEmailOTP(otp);
       } else {
@@ -99,7 +91,6 @@ class EmailVerificationController extends GetxController {
     } catch (e, st) {
       Logger.e('Error verifying email OTP', error: e, stackTrace: st);
       
-      // Use centralized error handler
       final errorMessage = ApiErrorHandler.handleError(e);
       ToastService.error(errorMessage);
     } finally {
@@ -108,10 +99,8 @@ class EmailVerificationController extends GetxController {
   }
 
   Future<void> _verifyLoginEmailOTP(String otp) async {
-    // Get loginTokenId from storage if available
     String loginTokenIdValue = loginTokenId.value;
     if (loginTokenIdValue.isEmpty) {
-      // Try to get it from storage
       final tokens = await _tokenStorageService.getLoginTokens();
       loginTokenIdValue = tokens['loginTokenId'] ?? '';
     }
@@ -121,11 +110,8 @@ class EmailVerificationController extends GetxController {
       return;
     }
 
-    // Determine platform
     final platform = Platform.isAndroid ? 'android' : 'ios';
     Logger.d('Platform: $platform');
-
-    // Make verify login API call
     Logger.d('Making verify login API call');
     final verifyResponse = await _authService.verifyLogin(
       loginTokenId: loginTokenIdValue,
@@ -137,7 +123,6 @@ class EmailVerificationController extends GetxController {
       Logger.d('Email OTP verification successful');
       ToastService.success('Email verification successful');
       
-      // Navigate to main screen
       Get.offAllNamed('/main');
     } else {
       Logger.w('Email OTP verification failed: ${verifyResponse.error}');
@@ -154,19 +139,15 @@ class EmailVerificationController extends GetxController {
       return;
     }
 
-    // Determine platform
     final platform = Platform.isAndroid ? 'android' : 'ios';
     Logger.d('Platform: $platform');
 
-    // Check if we have both mobile and email OTPs (from mobile verification flow)
     String mobileOtpToSend = mobileOtp.value;
     String emailOtpToSend = otp;
 
     if (mobileOtpToSend.isNotEmpty) {
-      // Both mobile and email verification
       Logger.d('Making verify signup API call with both mobile and email OTPs');
     } else {
-      // Email-only verification
       Logger.d('Making verify signup API call for email-only');
     }
 
@@ -180,8 +161,6 @@ class EmailVerificationController extends GetxController {
     if (verifyResponse.success) {
       Logger.d('Email OTP verification successful');
       ToastService.success('Login Successful');
-      
-      // Navigate to main screen
       Get.offAllNamed('/main');
     } else {
       Logger.w('Email OTP verification failed: ${verifyResponse.error}');
@@ -216,10 +195,8 @@ class EmailVerificationController extends GetxController {
 
       Logger.i('OTP resent successfully');
 
-      // Start countdown timer
       _startResendCountdown();
 
-      // Clear current OTP fields
       _clearOTPFields();
     } catch (e) {
       Logger.e('Failed to resend OTP', error: e);
