@@ -130,7 +130,7 @@ class CustomTextField extends StatelessWidget {
               borderRadius: BorderRadius.circular(borderRadius ?? AppConstants.defaultRadius),
               borderSide: const BorderSide(color: AppColors.error, width: 2),
             ) : null,
-            counterText: maxLength != null ? null : '',
+            counterText: '',
           ),
         ),
         ),

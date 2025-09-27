@@ -120,6 +120,7 @@ class RegisterView extends GetView<RegisterController> {
       labelText: Tr.phoneNumber,
       hintText: Tr.enterPhoneNumber,
       keyboardType: TextInputType.phone,
+      maxLength: 10,
       prefixIcon: CountryCodePicker(
         onChanged: controller.onCountryChanged,
         initialSelection: 'IN', // This should match with controller default

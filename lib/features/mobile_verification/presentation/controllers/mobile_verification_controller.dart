@@ -1,21 +1,19 @@
 import 'dart:async';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/utils/logger.dart';
-import '../../../../core/constants/api_endpoints.dart';
-import '../../../../core/services/api_client.dart';
-import '../../../../core/services/recaptcha_service.dart';
-import '../../../../core/services/fcm_service.dart';
-import '../../../../core/services/token_storage_service.dart';
+import '../../../../core/utils/api_error_handler.dart';
 import '../../../../core/services/toast_service.dart';
-import '../../../../core/models/auth/signup_models.dart';
+import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/token_storage_service.dart';
 
 class MobileVerificationController extends GetxController {
   final TextEditingController otpController = TextEditingController();
 
   final RxString userMobile = ''.obs;
   final RxString tokenId = ''.obs;
+  final RxString signupTokenId = ''.obs;
   final RxBool needsEmailVerification = false.obs;
   final RxString userEmail = ''.obs;
   final RxBool isLoading = false.obs;
@@ -27,11 +25,9 @@ class MobileVerificationController extends GetxController {
 
 
 
-  // Services
-  final ApiClient _apiClient = ApiClient();
-  final RecaptchaService _recaptchaService = RecaptchaService();
-  final FCMService _fcmService = FCMService();
-  final TokenStorageService _tokenStorage = TokenStorageService();
+  // Services for API calls
+  final AuthService _authService = AuthService();
+  final TokenStorageService _tokenStorageService = TokenStorageService();
 
   Timer? _resendTimer;
 
@@ -56,6 +52,7 @@ class MobileVerificationController extends GetxController {
     if (arguments != null && arguments is Map<String, dynamic>) {
       userMobile.value = arguments['mobileNo'] ?? arguments['mobile'] ?? '';
       tokenId.value = arguments['loginTokenId'] ?? arguments['tokenId'] ?? '';
+      signupTokenId.value = arguments['tokenId'] ?? '';
       needsEmailVerification.value = arguments['needsEmailVerification'] == true;
       userEmail.value = arguments['email'] ?? '';
     }
@@ -82,157 +79,147 @@ class MobileVerificationController extends GetxController {
     
     try {
       isLoading.value = true;
-      final bool isSignUpFlow = Get.currentRoute.contains('mobile-verification');
-      
-      if (isSignUpFlow) {
-        if(needsEmailVerification.value){
-          _checkNextVerificationStep();
-        }else{
-        await _verifySignUpOTP(otp);
-        }
+      Logger.d('Starting mobile OTP verification for: ${userMobile.value}');
+
+      // Check if this is a signup flow or login flow
+      if (flow.value == 'register') {
+        await _verifySignupOTP(otp);
       } else {
         await _verifyLoginOTP(otp);
       }
       
-    } catch (e) {
-      Logger.e('Error verifying mobile OTP', error: e);
+    } catch (e, st) {
+      Logger.e('Error verifying mobile OTP', error: e, stackTrace: st);
+      
+      // Use centralized error handler
+      final errorMessage = ApiErrorHandler.handleError(e);
+      ToastService.error(errorMessage);
     } finally {
       isLoading.value = false;
     }
   }
 
-  Future<void> _verifySignUpOTP(String otp) async {
-    try {
-
-
-      final reCaptchaToken = await _recaptchaService.generateSignUpVerificationToken();
-      
-      final VerifySignUpOtpRequest request = VerifySignUpOtpRequest(
-        tokenId: tokenId.value,
-        mobileOtp: otp,
-        reCaptchaToken: reCaptchaToken,
-        platform: 'android',
-      );
-      
-      Logger.api('Verify SignUp OTP request', endpoint: ApiEndpoints.verifySignUpOtp, data: request.toJson());
-
-      final response = await _apiClient.postJson<Map<String, dynamic>>(
-        ApiEndpoints.verifySignUpOtp,
-        data: request.toJson(),
-      );
-
-      final data = response.data ?? <String, dynamic>{};
-      Logger.api('Verify SignUp OTP response', endpoint: ApiEndpoints.verifySignUpOtp, data: data);
-
-      final verifySignUpOtpResponse = VerifySignUpOtpResponse.fromJson(data);
-      
-      if (!verifySignUpOtpResponse.success) {
-        String errorMessage = verifySignUpOtpResponse.error.isNotEmpty ? verifySignUpOtpResponse.error : 'Verification failed';
-        if (verifySignUpOtpResponse.reasonCode.isNotEmpty) {
-          errorMessage = verifySignUpOtpResponse.reasonCode;
-        }
-        ToastService.error(errorMessage);
-        return;
-      }
-
-      // If successful and it returns loginToken/loginTokenId, call verifyLogin
-      if (verifySignUpOtpResponse.loginToken != null && verifySignUpOtpResponse.loginTokenId != null) {
-        await _verifyLoginWithTokens(verifySignUpOtpResponse.loginToken!, verifySignUpOtpResponse.loginTokenId!);
-      }
-      
-    } catch (e) {
-      Logger.e('Error verifying signup OTP', error: e);
-    }
-  }
-
   Future<void> _verifyLoginOTP(String otp) async {
-    try {
-      final firebaseToken = await _fcmService.getToken();
-      final reCaptchaToken = await _recaptchaService.generateLoginVerificationToken();
+    // Get loginTokenId from storage if available
+    String loginTokenId = tokenId.value;
+    if (loginTokenId.isEmpty) {
+      // Try to get it from storage
+      final tokens = await _tokenStorageService.getLoginTokens();
+      loginTokenId = tokens['loginTokenId'] ?? '';
+    }
+
+    if (loginTokenId.isEmpty) {
+      ToastService.error('Login token not found. Please login again.');
+      return;
+    }
+
+    // Determine platform
+    final platform = Platform.isAndroid ? 'android' : 'ios';
+    Logger.d('Platform: $platform');
+
+    // Make verify login API call
+    Logger.d('Making verify login API call');
+    final verifyResponse = await _authService.verifyLogin(
+      loginTokenId: loginTokenId,
+      otp: otp,
+      platform: platform,
+    );
+
+    if (verifyResponse.success) {
+      Logger.d('Mobile OTP verification successful');
+      ToastService.success('Login Successful.');
       
-      final requestData = {
-        'loginTokenId': tokenId.value,
-        'otp': otp,
-        'firebaseToken': firebaseToken,
-        'reCaptchaToken': reCaptchaToken,
-        'platform': 'android',
-      };
-      
-      final response = await _apiClient.postJson<Map<String, dynamic>>(
-        ApiEndpoints.verifyLogin,
-        data: requestData,
-      );
-      
-      if (response.statusCode == 200 && response.data != null) {
-        final data = response.data!;
-        final success = data['success'] ?? false;
-        final token = data['token']?.toString();
-        
-        if (success && token != null && token.isNotEmpty) {
-          await _tokenStorage.saveJWTToken(token);
-          ToastService.success('Mobile verification completed successfully');
-          Get.offAllNamed('/main');
-        } else {
-          final errorMessage = data['reasonCode']?.toString() ?? data['error']?.toString() ?? 'Verification failed';
-          ToastService.error(errorMessage);
-        }
-      } else {
-        ToastService.error('Verification failed');
-      }
-    } catch (e) {
-      Logger.e('Error verifying login OTP', error: e);
-      ToastService.error('Verification failed');
+      // Navigate based on verification step
+      _checkNextVerificationStep();
+    } else {
+      Logger.w('Mobile OTP verification failed: ${verifyResponse.error}');
+      final errorMessage = verifyResponse.error.isNotEmpty 
+          ? verifyResponse.error 
+          : 'OTP verification failed. Please try again.';
+      ToastService.error(errorMessage);
     }
   }
 
-  Future<void> _verifyLoginWithTokens(String loginToken, String loginTokenId) async {
-    try {
-      final firebaseToken = await _fcmService.getToken();
+  Future<void> _verifySignupOTP(String otp) async {
+    if (signupTokenId.value.isEmpty) {
+      ToastService.error('Signup token not found. Please try again.');
+      return;
+    }
+
+    // Determine platform
+    final platform = Platform.isAndroid ? 'android' : 'ios';
+    Logger.d('Platform: $platform');
+
+    // Check if email verification is also needed
+    if (needsEmailVerification.value && userEmail.value.isNotEmpty) {
+      // Both mobile and email verification needed - store mobile OTP and navigate to email verification
+      // We'll verify both OTPs together in email verification
+      Logger.d('Mobile OTP verified, navigating to email verification');
+      ToastService.success('Mobile OTP verified');
       
-      final requestData = {
-        'loginToken': loginToken,
-        'loginTokenId': loginTokenId,
-        'firebaseToken': firebaseToken,
-      };
-      
-      final response = await _apiClient.postJson<Map<String, dynamic>>(
-        ApiEndpoints.verifyLogin,
-        data: requestData,
+      // Navigate to email verification with mobile OTP stored
+      Get.toNamed('/email-verification', arguments: {
+        'email': userEmail.value,
+        'mobile': userMobile.value,
+        'tokenId': signupTokenId.value,
+        'mobileOtp': otp, // Pass the mobile OTP to email verification
+        'flow': 'register'
+      });
+    } else {
+      // Mobile-only verification
+      Logger.d('Making verify signup API call for mobile-only');
+      final verifyResponse = await _authService.verifySignUpOtp(
+        tokenId: signupTokenId.value,
+        mobileOtp: otp,
+        emailOtp: '', // Empty for mobile-only verification
+        platform: platform,
       );
-      
-      if (response.statusCode == 200 && response.data != null) {
-        final data = response.data!;
-        final success = data['success'] ?? false;
-        final token = data['token']?.toString();
+
+      if (verifyResponse.success) {
+        Logger.d('Mobile OTP verification successful');
+        ToastService.success('Login Successful');
         
-        if (success && token != null && token.isNotEmpty) {
-          await _tokenStorage.saveJWTToken(token);
-          ToastService.success('Login successful');
-          Get.offAllNamed('/main');
-        } else {
-          final errorMessage = data['reasonCode']?.toString() ?? data['error']?.toString() ?? 'Login verification failed';
-          ToastService.error(errorMessage);
-        }
+        // Navigate to main screen
+        Get.offAllNamed('/main');
       } else {
-        ToastService.error('Login verification failed');
+        Logger.w('Mobile OTP verification failed: ${verifyResponse.error}');
+        final errorMessage = verifyResponse.error.isNotEmpty 
+            ? verifyResponse.error 
+            : 'OTP verification failed. Please try again.';
+        ToastService.error(errorMessage);
       }
-    } catch (e) {
-      Logger.e('Error verifying login with tokens', error: e);
-      ToastService.error('Login verification failed');
     }
   }
+
+
+
 
 
   void _checkNextVerificationStep() {
-    if (needsEmailVerification.value && userEmail.value.isNotEmpty) {
-      Get.offNamed('/email-verification', arguments: {
-        'email': userEmail.value,
-        'tokenId': tokenId.value,
-        'mobile': userMobile.value,
-        'flow':'login'
-      });
+    if (flow.value == 'register') {
+      // For signup flow, check if email verification is needed
+      if (needsEmailVerification.value && userEmail.value.isNotEmpty) {
+        Get.toNamed('/email-verification', arguments: {
+          'email': userEmail.value,
+          'mobile': userMobile.value,
+          'tokenId': signupTokenId.value,
+          'flow': 'register'
+        });
+      } else {
+        // Mobile-only signup verification completed
+        Get.offAllNamed('/main');
+      }
     } else {
-      Get.offAllNamed('/main');
+      // For login flow
+      if (needsEmailVerification.value && userEmail.value.isNotEmpty) {
+        Get.toNamed('/email-verification', arguments: {
+          'email': userEmail.value,
+          'mobile': userMobile.value,
+          'flow': 'login'
+        });
+      } else {
+        Get.offAllNamed('/main');
+      }
     }
   }
 

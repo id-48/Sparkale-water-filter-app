@@ -93,9 +93,7 @@ class LoginView extends GetView<LoginController> {
           children: [
             Obx(
               () => Text(
-                controller.isEmailInput.value
-                    ? Tr.email
-                    : Tr.mono,
+                controller.isEmailInput.value ? Tr.email : Tr.mono,
                 style: const TextStyle(
                   fontSize: AppConstants.defaultFontSize,
                   color: AppColors.textSecondary,
@@ -123,13 +121,15 @@ class LoginView extends GetView<LoginController> {
         const SizedBox(height: AppConstants.smallPadding),
         Obx(
           () => CustomTextField(
+            key: ValueKey(controller.isEmailInput.value),
             controller: controller.emailController,
             hintText: controller.isEmailInput.value
                 ? Tr.enterEmail
                 : Tr.enterPhoneNumber,
             keyboardType: controller.isEmailInput.value
                 ? TextInputType.emailAddress
-                : TextInputType.emailAddress,
+                : TextInputType.number,
+            maxLength: controller.isEmailInput.value ? null : 10,
             prefixIcon: controller.isEmailInput.value
                 ? null
                 : CountryCodePicker(
@@ -156,24 +156,6 @@ class LoginView extends GetView<LoginController> {
                   ),
           ),
         ),
-        // Show hint text for mobile number input
-        Obx(
-          () => controller.isEmailInput.value
-              ? const SizedBox.shrink()
-              : Column(
-                  children: [
-                    const SizedBox(height: AppConstants.smallPadding),
-                    Text(
-                      Tr.enter10DigitMobileNumber,
-                      style: const TextStyle(
-                        fontSize: AppConstants.smallFontSize,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
-                ),
-        ),
       ],
     );
   }
@@ -182,8 +164,8 @@ class LoginView extends GetView<LoginController> {
     return SizedBox(
       width: double.infinity,
       height: 56,
-      child: ElevatedButton(
-        onPressed: controller.sendOtp,
+      child: Obx(() => ElevatedButton(
+        onPressed: controller.isLoading.value ? null : () => controller.sendOtp(),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.white,
@@ -191,15 +173,25 @@ class LoginView extends GetView<LoginController> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
           ),
+          disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.6),
         ),
-        child:  Text(
-          Tr.sendOtp,
-          style: const TextStyle(
-            fontSize: AppConstants.mediumFontSize,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+        child: controller.isLoading.value
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.white,
+                ),
+              )
+            : Text(
+                Tr.sendOtp,
+                style: const TextStyle(
+                  fontSize: AppConstants.mediumFontSize,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+      )),
     );
   }
 
@@ -212,7 +204,7 @@ class LoginView extends GetView<LoginController> {
             decoration: const BoxDecoration(color: AppColors.border),
           ),
         ),
-         Padding(
+        Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppConstants.defaultPadding,
           ),
@@ -283,7 +275,7 @@ class LoginView extends GetView<LoginController> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-         Text(
+        Text(
           Tr.dontHaveAccount,
           style: const TextStyle(
             fontSize: AppConstants.defaultFontSize,
@@ -294,7 +286,7 @@ class LoginView extends GetView<LoginController> {
         const SizedBox(width: AppConstants.smallPadding),
         GestureDetector(
           onTap: controller.navigateToSignUp,
-          child:  Text(
+          child: Text(
             Tr.signUp,
             style: const TextStyle(
               fontSize: AppConstants.defaultFontSize,

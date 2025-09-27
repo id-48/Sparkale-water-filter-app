@@ -1,13 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:country_code_picker/country_code_picker.dart';
-import 'package:dio/dio.dart';
 import '../../../../core/utils/logger.dart';
-import '../../../../core/services/api_client.dart';
-import '../../../../core/services/recaptcha_service.dart';
-import '../../../../core/constants/api_endpoints.dart';
-import '../../../../core/models/auth/signup_models.dart';
+import '../../../../core/utils/api_error_handler.dart';
 import '../../../../core/services/toast_service.dart';
+import '../../../../core/services/auth_service.dart';
 
 class RegisterController extends GetxController {
 
@@ -24,7 +22,9 @@ class RegisterController extends GetxController {
   final RxString selectedCountryCode = '+91'.obs; // Changed default to +91 to match CountryCodePicker initialSelection
   final RxString selectedCountryFlag = '🇮🇳'.obs; // Changed flag to match India
   
- 
+  // Services
+  final AuthService _authService = AuthService();
+
   @override
   void onInit() {
     super.onInit();
@@ -115,101 +115,79 @@ class RegisterController extends GetxController {
 
     try {
       isLoading.value = true;
-
+      
       final String countryCode = selectedCountryCode.value.replaceAll('+', '');
-      Logger.d('Using country code for API: $countryCode (from selected: ${selectedCountryCode.value})');
+      Logger.d('Starting registration process for: $firstName $lastName');
 
-      final String recaptchaToken = await RecaptchaService().generateSignUpToken();
+      // Determine which field to use for signup
+      String mobileNoForApi = '';
+      if (mobile.isNotEmpty) {
+        mobileNoForApi = mobile;
+      } else if (email.isNotEmpty) {
+        // If only email provided but no phone, use email
+        mobileNoForApi = ''; // Will be managed by API if needed
+      }
 
-      final SignupRequest request = SignupRequest(
+      // Determine platform
+      final platform = Platform.isAndroid ? 'android' : 'ios';
+      Logger.d('Platform: $platform');
+
+      // Make signup API call
+      Logger.d('Making signup API call');
+      final signupResponse = await _authService.signup(
         firstName: firstName,
         lastName: lastName,
-        email: email,
-        mobileNo: mobile,
-        imageBase64: null,
+        email: email.isNotEmpty ? email : '',
+        mobileNo: mobileNoForApi,
         countryCode: countryCode,
-        reCaptchaToken: recaptchaToken,
-        platform: GetPlatform.isAndroid ? 'android' : 'ios',
+        platform: platform,
       );
 
-      Logger.api('Register request', endpoint: ApiEndpoints.signup, data: request.toJson());
-      Logger.d('API Request - Country Code sent: $countryCode for mobile: $mobile');
+      if (signupResponse.success) {
+        Logger.d('Code Send Successfully');
+        ToastService.success('Code Send Successfully');
 
-      final response = await ApiClient().postJson<Map<String, dynamic>>(
-        ApiEndpoints.signup,
-        data: request.toJson(),
-        options: Options(responseType: ResponseType.json),
-      );
-
-      final data = response.data ?? <String, dynamic>{};
-      Logger.api('Register response', endpoint: ApiEndpoints.signup, data: data);
-
-      final signupResponse = SignupResponse.fromJson(data);
-      if (!signupResponse.success) {
-        String errorMessage = signupResponse.error.isNotEmpty ? signupResponse.error : 'Something went wrong';
-        // Use reasonCode if available from response
-        if (signupResponse.reasonCode.isNotEmpty) {
-          errorMessage = signupResponse.reasonCode;
+        // Navigate based on signup response
+        if (signupResponse.verifyMobileNoOTP && signupResponse.verifyEmailOTP) {
+          // Both email and mobile verification needed
+          Get.toNamed('/mobile-verification', arguments: {
+            'mobile': mobile,
+            'countryCode': countryCode,
+            'needsEmailVerification': true,
+            'email': email,
+            'tokenId': signupResponse.tokenId,
+            'flow': 'register'
+          });
+        } else if (signupResponse.verifyMobileNoOTP && mobile.isNotEmpty) {
+          // Only mobile verification needed
+          Get.toNamed('/mobile-verification', arguments: {
+            'mobile': mobile,
+            'countryCode': countryCode,
+            'tokenId': signupResponse.tokenId,
+            'flow': 'register'
+          });
+        } else if (signupResponse.verifyEmailOTP && email.isNotEmpty) {
+          // Only email verification needed
+          Get.toNamed('/email-verification', arguments: {
+            'email': email,
+            'tokenId': signupResponse.tokenId,
+            'flow': 'register'
+          });
         }
+      } else {
+        Logger.w('Registration failed: ${signupResponse.error}');
+        final errorMessage = signupResponse.error.isNotEmpty 
+            ? signupResponse.error 
+            : 'Registration failed. Please try again.';
         ToastService.error(errorMessage);
-        return;
       }
 
-      // Show success toast
-      ToastService.success('Code Send Successfully.');
-
-      final bool verifyMobileNoOTP = signupResponse.verifyMobileNoOTP;
-      final bool verifyEmailOTP = signupResponse.verifyEmailOTP;
-
-      final String tokenId = signupResponse.tokenId ??"";
-
-      if (verifyMobileNoOTP && verifyEmailOTP) {
-        Get.toNamed('/mobile-verification', arguments: {
-          'mobile': mobile,
-          'countryCode': countryCode, // Add country code to navigation
-          'tokenId': tokenId,
-          'needsEmailVerification': true,
-          'email': email,
-          'flow':'register'
-        });
-        return;
-      }
-
-      if (verifyMobileNoOTP) {
-        Get.toNamed('/mobile-verification', arguments: {
-          'mobile': mobile,
-          'countryCode': countryCode, // Add country code to navigation
-          'tokenId': tokenId,
-          'flow': 'register'
-        });
-        return;
-      }
-
-      if (verifyEmailOTP) {
-        Get.toNamed('/email-verification', arguments: {
-          'email': email,
-          'tokenId': tokenId,
-          'flow':'register'
-        });
-        return;
-      }
-
-    } on DioException catch (e, st) {
-      Logger.e('Register API error', error: e, stackTrace: st);
-      String errorMessage = 'Network error';
-      
-      if (e.response?.data is Map<String, dynamic>) {
-        final data = e.response!.data as Map<String, dynamic>;
-        if (data['reasonCode'] != null && data['reasonCode'].toString().isNotEmpty) {
-          errorMessage = data['reasonCode'].toString();
-        } else if (data['error'] != null && data['error'].toString().isNotEmpty) {
-          errorMessage = data['error'].toString();
-        }
-      }
-      ToastService.error(errorMessage);
     } catch (e, st) {
-      Logger.e('Register unexpected error', error: e, stackTrace: st);
-      ToastService.error('Unexpected error');
+      Logger.e('Registration error', error: e, stackTrace: st);
+      
+      // Use centralized error handler
+      final errorMessage = ApiErrorHandler.handleError(e);
+      ToastService.error(errorMessage);
     } finally {
       isLoading.value = false;
     }

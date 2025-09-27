@@ -105,23 +105,41 @@ class ProfileView extends GetView<ProfileController> {
             ],
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Ralph Edwards',
-            style: TextStyle(
-              fontSize: AppConstants.mediumFontSize,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            '(+44) 012 - 456 - 789',
-            style: TextStyle(
-              fontSize: AppConstants.mediumFontSize,
-              fontWeight: FontWeight.w400,
-              color: AppColors.textSecondary,
-            ),
-          ),
+          Obx(() {
+            if (controller.isProfileLoading.value) {
+              return const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
+              );
+            }
+            
+            final customer = controller.customer.value;
+            return Column(
+              children: [
+                Text(
+                  customer?.fullName ?? 'Loading...',
+                  style: const TextStyle(
+                    fontSize: AppConstants.mediumFontSize,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  customer?.formattedMobileNo ?? 'Loading...',
+                  style: const TextStyle(
+                    fontSize: AppConstants.mediumFontSize,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            );
+          }),
         ],
       ),
     );

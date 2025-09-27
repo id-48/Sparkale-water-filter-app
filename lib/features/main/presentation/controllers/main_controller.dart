@@ -4,6 +4,7 @@ import 'package:sparkle/core/constants/app_colors.dart';
 import 'package:sparkle/features/home/presentation/views/home_view.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../profile/presentation/views/profile_view.dart';
+import '../../../profile/presentation/controllers/profile_controller.dart';
 
 class MainController extends GetxController {
   final RxInt currentIndex = 0.obs;
@@ -15,7 +16,14 @@ class MainController extends GetxController {
   void onInit() {
     super.onInit();
     _initializePages();
+    _preloadProfileData();
     Logger.i('MainController initialized');
+  }
+
+  void _preloadProfileData() {
+    // Pre-load profile data in background
+    Logger.d('Pre-loading profile data');
+    Get.find<ProfileController>().refreshProfile();
   }
 
   void _initializePages() {

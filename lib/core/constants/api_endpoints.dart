@@ -10,6 +10,9 @@ class ApiEndpoints {
   static const String signup = '/v1/signup';
   static const String verifySignUpOtp = '/v1/verifySignUpOtp';
   static const String verifyLogin = '/v1/verifyLogin';
+  static const String verifyLoginWithToken = '/v1/verifyLogin';
+  static const String logout = '/v1/logout';
+  static const String getCustomer = '/v1/getCustomer';
 }
 
 

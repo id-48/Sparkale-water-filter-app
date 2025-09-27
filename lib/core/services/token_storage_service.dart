@@ -12,6 +12,7 @@ class TokenStorageService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_jwtTokenKey, token);
       Logger.i('JWT token saved successfully');
+      Logger.d('JWT token value: ${token.substring(0, 20)}...');
     } catch (e, st) {
       Logger.e('Failed to save JWT token', error: e, stackTrace: st);
       rethrow;
@@ -21,7 +22,13 @@ class TokenStorageService {
   Future<String?> getJWTToken() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      return prefs.getString(_jwtTokenKey);
+      final token = prefs.getString(_jwtTokenKey);
+      if (token != null) {
+        Logger.d('JWT token retrieved: ${token.substring(0, 20)}...');
+      } else {
+        Logger.d('No JWT token found in storage');
+      }
+      return token;
     } catch (e, st) {
       Logger.e('Failed to get JWT token', error: e, stackTrace: st);
       return null;
