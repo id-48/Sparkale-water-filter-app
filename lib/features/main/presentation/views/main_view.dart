@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/translation_helper.dart';
+import '../../../../core/utils/status_bar_util.dart';
 import '../../../../core/constants/app_images.dart';
 import '../controllers/main_controller.dart';
 
@@ -11,6 +12,8 @@ class MainView extends GetView<MainController> {
 
   @override
   Widget build(BuildContext context) {
+    StatusBarUtil.setStatusBarStyle();
+    
     return Container(
       color: AppColors.background,
       child: SafeArea(
@@ -31,7 +34,7 @@ class MainView extends GetView<MainController> {
         vertical: 12,
       ),
       decoration: BoxDecoration(
-        color: AppColors.textPrimary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Obx(

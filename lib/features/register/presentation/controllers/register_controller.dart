@@ -64,6 +64,12 @@ class RegisterController extends GetxController {
   
   Future<void> registerUser() async {
     if (isLoading.value) return;
+    
+    // Validate form first
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    
     if (!isTermsAccepted.value) {
       ToastService.error('Please accept Terms & Conditions');
       return;
@@ -73,37 +79,6 @@ class RegisterController extends GetxController {
     final String lastName = lastNameController.text.trim();
     final String email = emailController.text.trim();
     final String mobile = phoneController.text.trim();
-
-    if (firstName.isEmpty) {
-      ToastService.error('First name is required');
-      return;
-    }
-
-    if (lastName.isEmpty) {
-      ToastService.error('Last name is required');
-      return;
-    }
-
-    if (email.isEmpty && mobile.isEmpty) {
-      ToastService.error('Email or phone number is required');
-      return;
-    }
-
-    if (email.isNotEmpty) {
-      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-      if (!emailRegex.hasMatch(email)) {
-        ToastService.error('Please enter a valid email address');
-        return;
-      }
-    }
-
-    if (mobile.isNotEmpty) {
-      final phoneRegex = RegExp(r'^[+]?[0-9]{10,15}$');
-      if (!phoneRegex.hasMatch(mobile)) {
-        ToastService.error('Please enter a valid phone number');
-        return;
-      }
-    }
 
     try {
       isLoading.value = true;
@@ -204,5 +179,50 @@ class RegisterController extends GetxController {
   
   void navigateToPrivacyPolicy() {
     Logger.i('Navigate to Privacy Policy');
+  }
+  
+  // Validation methods for form fields
+  String? validateFirstName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'First name is required';
+    }
+    if (value.trim().length < 2) {
+      return 'First name must be at least 2 characters';
+    }
+    return null;
+  }
+  
+  String? validateLastName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Last name is required';
+    }
+    if (value.trim().length < 2) {
+      return 'Last name must be at least 2 characters';
+    }
+    return null;
+  }
+  
+  String? validatePhoneNumber(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Phone number is required';
+    }
+    if (value.trim().length != 10) {
+      return 'Phone number must be 10 digits';
+    }
+    if (!RegExp(r'^[0-9]+$').hasMatch(value.trim())) {
+      return 'Phone number must contain only digits';
+    }
+    return null;
+  }
+  
+  String? validateEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Email is required';
+    }
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(value.trim())) {
+      return 'Please enter a valid email address';
+    }
+    return null;
   }
 }

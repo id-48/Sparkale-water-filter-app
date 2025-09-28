@@ -5,6 +5,7 @@ import 'package:sparkle/core/utils/translation_helper.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_images.dart';
+import '../../../../core/utils/status_bar_util.dart';
 import '../controllers/email_verification_controller.dart';
 
 class EmailVerificationView extends GetView<EmailVerificationController> {
@@ -14,6 +15,9 @@ class EmailVerificationView extends GetView<EmailVerificationController> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+    
+    StatusBarUtil.setStatusBarStyle();
+    
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(

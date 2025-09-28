@@ -12,9 +12,12 @@ import '../../../../core/services/recaptcha_service.dart';
 class LoginController extends GetxController {
   final TextEditingController emailController = TextEditingController();
   
-  final RxBool isEmailInput = true.obs;
+  final RxBool isEmailInput = false.obs;
   final RxBool isLoading = false.obs;
   final Rx<CountryCode> selectedCountry = CountryCode.fromCountryCode('IN').obs;
+  
+  GlobalKey<FormState> get formKey => _formKey;
+  late final GlobalKey<FormState> _formKey;
 
   final AuthService _authService = AuthService();
   final RecaptchaService _recaptchaService = RecaptchaService();
@@ -23,6 +26,7 @@ class LoginController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _formKey = GlobalKey<FormState>(debugLabel: 'LoginForm_${DateTime.now().millisecondsSinceEpoch}');
   }
   
   @override
@@ -43,21 +47,8 @@ class LoginController extends GetxController {
   }
   
   Future<void> sendOtp() async {
-    if (emailController.text.trim().isEmpty) {
-      _showErrorToast(
-        isEmailInput.value 
-            ? AppStrings.pleaseEnterEmail 
-            : AppStrings.pleaseEnterMobileNumber
-      );
-      return;
-    }
-    
-    if (!_isValidInput()) {
-      _showErrorToast(
-        isEmailInput.value 
-            ? AppStrings.pleaseEnterValidEmail 
-            : AppStrings.pleaseEnterValidMobileNumber
-      );
+    // Validate form first
+    if (!_formKey.currentState!.validate()) {
       return;
     }
     
@@ -132,5 +123,27 @@ class LoginController extends GetxController {
   
   void _showErrorToast(String message) {
     ToastService.error(message);
+  }
+  
+  // Validation methods for form fields
+  String? validateEmailOrPhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return isEmailInput.value ? 'Email is required' : 'Phone number is required';
+    }
+    
+    if (isEmailInput.value) {
+      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+      if (!emailRegex.hasMatch(value.trim())) {
+        return 'Please enter a valid email address';
+      }
+    } else {
+      if (value.trim().length != 10) {
+        return 'Phone number must be 10 digits';
+      }
+      if (!RegExp(r'^[0-9]+$').hasMatch(value.trim())) {
+        return 'Phone number must contain only digits';
+      }
+    }
+    return null;
   }
 }

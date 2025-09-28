@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_images.dart';
 import '../../../../core/utils/translation_helper.dart';
+import '../../../../core/utils/status_bar_util.dart';
 import '../../presentation/controllers/mobile_verification_controller.dart';
 
 class MobileVerificationView extends GetView<MobileVerificationController> {
@@ -14,6 +15,9 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+
+    StatusBarUtil.setStatusBarStyle();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -62,7 +66,9 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
             const SizedBox(width: 4),
             Obx(() {
               return Text(
-                controller.flow == "register" ? Tr.backToRegister : Tr.backToLogin,
+                controller.flow == "register"
+                    ? Tr.backToRegister
+                    : Tr.backToLogin,
                 style: const TextStyle(
                   fontSize: AppConstants.mediumFontSize,
                   color: AppColors.textSecondary,
@@ -146,7 +152,7 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
               ),
             ),
             TextSpan(
-              text: controller.userMobile.value,
+              text: controller.formattedMobileNumber,
               style: const TextStyle(
                 fontWeight: FontWeight.w400,
                 color: AppColors.textSecondary,
@@ -173,32 +179,33 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
             ),
           ),
           child: OtpPinField(
-            maxLength: 6,
-            fieldWidth: 37,
-            fieldHeight: 40,
-            autoFocus: false,
-            cursorColor: AppColors.primary,
-            highlightBorder: false,
-            otpPinFieldStyle: const OtpPinFieldStyle(
-              hintText: '0',
-              showHintText: true,
-              activeFieldBorderColor: AppColors.white,
-              fieldBorderRadius: 0,
-              defaultFieldBorderColor: AppColors.white,
-              filledFieldBorderColor: AppColors.white,
-              fieldBorderWidth: 0,
-              hintTextColor: AppColors.grey,
-              textStyle: TextStyle(
-                fontSize: AppConstants.largeFontSize,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primary,
+              maxLength: 6,
+              fieldWidth: 37,
+              fieldHeight: 40,
+              autoFocus: false,
+              cursorColor: AppColors.primary,
+              highlightBorder: false,
+              otpPinFieldStyle: const OtpPinFieldStyle(
+                hintText: '0',
+                showHintText: true,
+                activeFieldBorderColor: AppColors.white,
+                fieldBorderRadius: 0,
+                defaultFieldBorderColor: AppColors.white,
+                filledFieldBorderColor: AppColors.white,
+                fieldBorderWidth: 0,
+                hintTextColor: AppColors.grey,
+                textStyle: TextStyle(
+                  fontSize: AppConstants.largeFontSize,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
               ),
-            ),
-            autoFillEnable: true,
-            showCursor: true,
-            keyboardType: TextInputType.number,
-            onChange: (value) => controller.onOTPChanged(value),
-            onSubmit: (String text) {},
+              autoFillEnable: true,
+              showCursor: true,
+              keyboardType: TextInputType.number,
+              onChange: (value) => controller.onOTPChanged(value),
+              onSubmit: (String text) {},
+
           ),
         ),
       ],

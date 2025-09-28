@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_images.dart';
 import '../../../../core/utils/translation_helper.dart';
+import '../../../../core/utils/status_bar_util.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../controllers/register_controller.dart';
 
@@ -15,6 +16,8 @@ class RegisterView extends GetView<RegisterController> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+
+    StatusBarUtil.setStatusBarStyle();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -102,6 +105,7 @@ class RegisterView extends GetView<RegisterController> {
       labelText: Tr.firstName,
       hintText: Tr.enterFirstName,
       textCapitalization: TextCapitalization.words,
+      validator: controller.validateFirstName,
     );
   }
 
@@ -111,6 +115,7 @@ class RegisterView extends GetView<RegisterController> {
       labelText: Tr.lastName,
       hintText: Tr.enterLastName,
       textCapitalization: TextCapitalization.words,
+      validator: controller.validateLastName,
     );
   }
 
@@ -121,16 +126,18 @@ class RegisterView extends GetView<RegisterController> {
       hintText: Tr.enterPhoneNumber,
       keyboardType: TextInputType.phone,
       maxLength: 10,
+      validator: controller.validatePhoneNumber,
       prefixIcon: CountryCodePicker(
         onChanged: controller.onCountryChanged,
-        initialSelection: 'IN', // This should match with controller default
+        initialSelection: 'IN',
         favorite: const ['+91', 'IN'],
         showCountryOnly: false,
         showOnlyCountryWhenClosed: false,
         alignLeft: false,
         showDropDownButton: true,
         showFlag: true,
-        flagWidth: 20,
+        hideMainText: true,
+        flagWidth: 30,
         textStyle: const TextStyle(
           fontSize: AppConstants.defaultFontSize,
           color: AppColors.textSecondary,
@@ -150,6 +157,7 @@ class RegisterView extends GetView<RegisterController> {
       labelText: Tr.email,
       hintText: Tr.enterEmail,
       keyboardType: TextInputType.emailAddress,
+      validator: controller.validateEmail,
     );
   }
 

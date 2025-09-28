@@ -12,6 +12,7 @@ class MobileVerificationController extends GetxController {
   final TextEditingController otpController = TextEditingController();
 
   final RxString userMobile = ''.obs;
+  final RxString countryCode = ''.obs;
   final RxString tokenId = ''.obs;
   final RxString signupTokenId = ''.obs;
   final RxBool needsEmailVerification = false.obs;
@@ -33,6 +34,7 @@ class MobileVerificationController extends GetxController {
     super.onInit();
     _initializeMobile();
     flow.value = arguments?["flow"] ?? "";
+
     Logger.i('MobileVerificationController initialized');
   }
 
@@ -47,6 +49,7 @@ class MobileVerificationController extends GetxController {
     final arguments = Get.arguments;
     if (arguments != null && arguments is Map<String, dynamic>) {
       userMobile.value = arguments['mobileNo'] ?? arguments['mobile'] ?? '';
+      countryCode.value = arguments['countryCode'] ?? '+91';
       tokenId.value = arguments['loginTokenId'] ?? arguments['tokenId'] ?? '';
       signupTokenId.value = arguments['tokenId'] ?? '';
       needsEmailVerification.value = arguments['needsEmailVerification'] == true;
@@ -61,7 +64,14 @@ class MobileVerificationController extends GetxController {
   void onOTPChanged(String value) {
     currentOTP.value = value;
   }
-
+  
+  // Get formatted mobile number with country code
+  String get formattedMobileNumber {
+    if (userMobile.value.isEmpty || userMobile.value == '+00******0000') {
+      return '+00******0000';
+    }
+    return '${countryCode.value}${userMobile.value}';
+  }
 
   String _getOTP() {
     return currentOTP.value;
