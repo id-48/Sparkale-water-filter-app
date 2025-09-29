@@ -49,6 +49,6 @@ class AppConstants {
   static const int defaultPageSize = 20;
   static const int maxPageSize = 100;
   
-  static const int cacheDuration = 300; // 5 minutes
-  static const int longCacheDuration = 3600; // 1 hour
+  static const int cacheDuration = 300;
+  static const int longCacheDuration = 3600;
 }

@@ -1,5 +1,4 @@
 import '../services/json_translation_service.dart';
-import '../constants/translation_keys.dart';
 
 class T {
   static String get(String key) {
@@ -12,13 +11,13 @@ class T {
 }
 
 class Tr {
-  static String get appName => T.get(TranslationKeys.appName);
-  static String get error => T.get(TranslationKeys.error);
-  static String get success => T.get(TranslationKeys.success);
-  static String get splashSubtitle => T.get(TranslationKeys.splashSubtitle);
-  static String get languageChanged => T.get(TranslationKeys.languageChanged);
-  static String get unknownError => T.get(TranslationKeys.unknownError);
-  static String get noDataFound => T.get(TranslationKeys.noDataFound);
+  static String get appName => T.get('appName');
+  static String get error => T.get('error');
+  static String get success => T.get('success');
+  static String get splashSubtitle => T.get('splashSubtitle');
+  static String get languageChanged => T.get('languageChanged');
+  static String get unknownError => T.get('unknownError');
+  static String get noDataFound => T.get('noDataFound');
 
   // Home / Bottom Nav
   static String get homeTitle => T.get('homeTitle');

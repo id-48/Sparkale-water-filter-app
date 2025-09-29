@@ -38,12 +38,12 @@ class AppPages {
     ),
     GetPage(
       name: emailVerification,
-      page: () =>  EmailVerificationView(),
+      page: () =>const  EmailVerificationView(),
       binding: EmailVerificationBinding(),
     ),
     GetPage(
       name: mobileVerification,
-      page: () =>  MobileVerificationView(),
+      page: () => const MobileVerificationView(),
       binding: MobileVerificationBinding(),
     ),
     GetPage(

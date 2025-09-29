@@ -53,7 +53,6 @@ class CustomToast {
       try {
         _currentToast?.remove();
       } catch (e) {
-        // Avoid exception if overlay already removed
       }
       _currentToast = null;
     }

@@ -6,13 +6,11 @@ class ApiErrorHandler {
     String defaultErrorMessage = 'Something went wrong. Please try again.';
 
     if (error is DioException) {
-      // Handle DioException
-      if (error.type == DioExceptionType.connectionTimeout || 
+      if (error.type == DioExceptionType.connectionTimeout ||
           error.type == DioExceptionType.receiveTimeout ||
           error.type == DioExceptionType.sendTimeout) {
         return 'Network timeout. Please check your internet connection.';
       } else if (error.response?.data != null) {
-        // Try to extract error message from API response
         try {
           final responseData = error.response!.data;
           if (responseData is Map<String, dynamic>) {
@@ -21,12 +19,10 @@ class ApiErrorHandler {
             }
           }
         } catch (_) {
-          // Use default error message if parsing fails
         }
       } else if (error.type == DioExceptionType.connectionError) {
         return 'No internet connection. Please check your network.';
       } else if (error.type == DioExceptionType.badResponse) {
-        // Handle bad response (4xx, 5xx status codes)
         if (error.response?.statusCode != null) {
           final statusCode = error.response!.statusCode!;
           if (statusCode >= 400 && statusCode < 500) {
@@ -39,10 +35,8 @@ class ApiErrorHandler {
       
       return error.message ?? defaultErrorMessage;
     } else if (error is Exception) {
-      // Handle custom exceptions
       final exceptionMessage = error.toString();
       if (exceptionMessage.startsWith('Exception: ')) {
-        // Extract the actual error message
         return exceptionMessage.replaceFirst('Exception: ', '');
       } else {
         return exceptionMessage;
@@ -59,7 +53,6 @@ class ApiErrorHandler {
     try {
       final responseData = dioException.response!.data;
       if (responseData is Map<String, dynamic>) {
-        // Common API error response format
         if (responseData.containsKey('error') && responseData['error'] != null) {
           return responseData['error'].toString();
         }
@@ -74,7 +67,6 @@ class ApiErrorHandler {
         }
       }
     } catch (_) {
-      // Ignore parsing errors
     }
     
     return null;

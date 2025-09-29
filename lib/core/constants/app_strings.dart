@@ -77,10 +77,7 @@ class AppStrings {
   static const String pleaseEnterMobileNumber = 'Please enter your mobile number';
   static const String pleaseEnterValidEmail = 'Please enter a valid email address';
   static const String pleaseEnterValidMobileNumber = 'Please enter a valid mobile number';
-  static const String otpSentSuccessfully = 'OTP sent successfully!';
-  static const String errorSendingOtp = 'Error sending OTP. Please try again.';
-  static const String googleSignInSuccess = 'Google Sign-In successful!';
-  static const String googleSignInError = 'Google Sign-In failed. Please try again.';
+
   
   // Error Messages
   static const String unknownError = 'An unknown error occurred.';

@@ -2,16 +2,19 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/constants/clarity_config.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/utils/api_error_handler.dart';
 import '../../../../core/services/toast_service.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/token_storage_service.dart';
+import '../../../../core/services/clarity_service.dart';
 
 class MobileVerificationController extends GetxController {
   final TextEditingController otpController = TextEditingController();
 
   final RxString userMobile = ''.obs;
+  final RxString countryCode = ''.obs;
   final RxString tokenId = ''.obs;
   final RxString signupTokenId = ''.obs;
   final RxBool needsEmailVerification = false.obs;
@@ -23,9 +26,6 @@ class MobileVerificationController extends GetxController {
   RxString flow = ''.obs;
   Map<String, dynamic>? arguments = Get.arguments as Map<String, dynamic>?;
 
-
-
-  // Services for API calls
   final AuthService _authService = AuthService();
   final TokenStorageService _tokenStorageService = TokenStorageService();
 
@@ -34,9 +34,10 @@ class MobileVerificationController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    ClarityService.to.trackScreenView(ClarityConfig.screenMobileVerification);
     _initializeMobile();
     flow.value = arguments?["flow"] ?? "";
-    print("flow==== $flow");
+
     Logger.i('MobileVerificationController initialized');
   }
 
@@ -51,6 +52,7 @@ class MobileVerificationController extends GetxController {
     final arguments = Get.arguments;
     if (arguments != null && arguments is Map<String, dynamic>) {
       userMobile.value = arguments['mobileNo'] ?? arguments['mobile'] ?? '';
+      countryCode.value = arguments['countryCode'] ?? '+91';
       tokenId.value = arguments['loginTokenId'] ?? arguments['tokenId'] ?? '';
       signupTokenId.value = arguments['tokenId'] ?? '';
       needsEmailVerification.value = arguments['needsEmailVerification'] == true;
@@ -63,9 +65,17 @@ class MobileVerificationController extends GetxController {
   }
 
   void onOTPChanged(String value) {
+    print('your value is ===> ${value}');
     currentOTP.value = value;
   }
-
+  
+  // Get formatted mobile number with country code
+  String get formattedMobileNumber {
+    if (userMobile.value.isEmpty || userMobile.value == '+00******0000') {
+      return '+00******0000';
+    }
+    return '${countryCode.value}${userMobile.value}';
+  }
 
   String _getOTP() {
     return currentOTP.value;
@@ -81,7 +91,6 @@ class MobileVerificationController extends GetxController {
       isLoading.value = true;
       Logger.d('Starting mobile OTP verification for: ${userMobile.value}');
 
-      // Check if this is a signup flow or login flow
       if (flow.value == 'register') {
         await _verifySignupOTP(otp);
       } else {
@@ -91,7 +100,6 @@ class MobileVerificationController extends GetxController {
     } catch (e, st) {
       Logger.e('Error verifying mobile OTP', error: e, stackTrace: st);
       
-      // Use centralized error handler
       final errorMessage = ApiErrorHandler.handleError(e);
       ToastService.error(errorMessage);
     } finally {
@@ -100,10 +108,8 @@ class MobileVerificationController extends GetxController {
   }
 
   Future<void> _verifyLoginOTP(String otp) async {
-    // Get loginTokenId from storage if available
     String loginTokenId = tokenId.value;
     if (loginTokenId.isEmpty) {
-      // Try to get it from storage
       final tokens = await _tokenStorageService.getLoginTokens();
       loginTokenId = tokens['loginTokenId'] ?? '';
     }
@@ -113,11 +119,9 @@ class MobileVerificationController extends GetxController {
       return;
     }
 
-    // Determine platform
     final platform = Platform.isAndroid ? 'android' : 'ios';
     Logger.d('Platform: $platform');
 
-    // Make verify login API call
     Logger.d('Making verify login API call');
     final verifyResponse = await _authService.verifyLogin(
       loginTokenId: loginTokenId,
@@ -129,7 +133,6 @@ class MobileVerificationController extends GetxController {
       Logger.d('Mobile OTP verification successful');
       ToastService.success('Login Successful.');
       
-      // Navigate based on verification step
       _checkNextVerificationStep();
     } else {
       Logger.w('Mobile OTP verification failed: ${verifyResponse.error}');
@@ -146,32 +149,27 @@ class MobileVerificationController extends GetxController {
       return;
     }
 
-    // Determine platform
     final platform = Platform.isAndroid ? 'android' : 'ios';
     Logger.d('Platform: $platform');
 
-    // Check if email verification is also needed
     if (needsEmailVerification.value && userEmail.value.isNotEmpty) {
-      // Both mobile and email verification needed - store mobile OTP and navigate to email verification
-      // We'll verify both OTPs together in email verification
+
       Logger.d('Mobile OTP verified, navigating to email verification');
       ToastService.success('Mobile OTP verified');
       
-      // Navigate to email verification with mobile OTP stored
       Get.toNamed('/email-verification', arguments: {
         'email': userEmail.value,
         'mobile': userMobile.value,
         'tokenId': signupTokenId.value,
-        'mobileOtp': otp, // Pass the mobile OTP to email verification
+        'mobileOtp': otp,
         'flow': 'register'
       });
     } else {
-      // Mobile-only verification
       Logger.d('Making verify signup API call for mobile-only');
       final verifyResponse = await _authService.verifySignUpOtp(
         tokenId: signupTokenId.value,
         mobileOtp: otp,
-        emailOtp: '', // Empty for mobile-only verification
+        emailOtp: '',
         platform: platform,
       );
 
@@ -179,7 +177,6 @@ class MobileVerificationController extends GetxController {
         Logger.d('Mobile OTP verification successful');
         ToastService.success('Login Successful');
         
-        // Navigate to main screen
         Get.offAllNamed('/main');
       } else {
         Logger.w('Mobile OTP verification failed: ${verifyResponse.error}');
@@ -197,7 +194,6 @@ class MobileVerificationController extends GetxController {
 
   void _checkNextVerificationStep() {
     if (flow.value == 'register') {
-      // For signup flow, check if email verification is needed
       if (needsEmailVerification.value && userEmail.value.isNotEmpty) {
         Get.toNamed('/email-verification', arguments: {
           'email': userEmail.value,
@@ -206,11 +202,9 @@ class MobileVerificationController extends GetxController {
           'flow': 'register'
         });
       } else {
-        // Mobile-only signup verification completed
         Get.offAllNamed('/main');
       }
     } else {
-      // For login flow
       if (needsEmailVerification.value && userEmail.value.isNotEmpty) {
         Get.toNamed('/email-verification', arguments: {
           'email': userEmail.value,

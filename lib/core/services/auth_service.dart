@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:dio/dio.dart';
 import '../models/auth/login/login_request.dart';
 import '../models/auth/login/login_response.dart';
 import '../models/auth/verify_login/verify_login_request.dart';
@@ -14,7 +13,6 @@ import '../models/auth/logout/logout_response.dart';
 import '../models/auth/profile/get_profile_response.dart';
 import '../constants/api_endpoints.dart';
 import '../utils/logger.dart';
-import '../utils/api_error_handler.dart';
 import 'api_client.dart';
 import 'token_storage_service.dart';
 import 'fcm_service.dart';
@@ -38,18 +36,13 @@ class AuthService {
   }) async {
     try {
       Logger.d('Starting login API call for mobile: $mobileNo');
-
       final loginRequest = LoginRequest(
         mobileNo: mobileNo,
         reCaptchaToken: reCaptchaToken,
         platform: platform,
       );
 
-      Logger.api(
-        'Login Request prepared',
-        endpoint: ApiEndpoints.login,
-        data: loginRequest.toJson(),
-      );
+      Logger.api('Login Request prepared', endpoint: ApiEndpoints.login, data: loginRequest.toJson(),);
 
       final response = await _apiClient.postJson<Map<String, dynamic>>(
         ApiEndpoints.login,
@@ -112,15 +105,12 @@ class AuthService {
   }) async {
     try {
       Logger.d('Starting verify login API call');
-
       Logger.d('Generating FCM token');
       final firebaseToken = await _fcmService.getToken();
       Logger.d('FCM token generated successfully');
-
       Logger.d('Generating reCAPTCHA verification token');
       final reCaptchaToken = await _recaptchaService.generateLoginVerificationToken();
       Logger.d('reCAPTCHA verification token generated');
-
       final platformName = Platform.isAndroid ? 'android' : 'ios';
       Logger.d('Platform: $platformName');
 
@@ -132,11 +122,7 @@ class AuthService {
         platform: platformName,
       );
 
-      Logger.api(
-        'Verify Login Request prepared',
-        endpoint: ApiEndpoints.verifyLogin,
-        data: verifyRequest.toJson(),
-      );
+      Logger.api('Verify Login Request prepared', endpoint: ApiEndpoints.verifyLogin, data: verifyRequest.toJson(),);
 
       final response = await _apiClient.postJson<Map<String, dynamic>>(
         ApiEndpoints.verifyLogin,
@@ -201,13 +187,9 @@ class AuthService {
   }) async {
     try {
       Logger.d('Starting signup API call for: $firstName $lastName');
-
-      // Generate reCaptcha token first
       Logger.d('Generating reCAPTCHA token for signup');
       final reCaptchaToken = await _recaptchaService.generateSignUpToken();
       Logger.d('reCAPTCHA token generated successfully');
-
-      // Determine platform
       final platformName = Platform.isAndroid ? 'android' : 'ios';
       Logger.d('Platform: $platformName');
 
@@ -222,11 +204,7 @@ class AuthService {
         platform: platformName,
       );
 
-      Logger.api(
-        'Signup Request prepared',
-        endpoint: ApiEndpoints.signup,
-        data: signupRequest.toJson(),
-      );
+      Logger.api('Signup Request prepared', endpoint: ApiEndpoints.signup, data: signupRequest.toJson(),);
 
       final response = await _apiClient.postJson<Map<String, dynamic>>(
         ApiEndpoints.signup,
@@ -246,19 +224,14 @@ class AuthService {
         
         Logger.d('Signup response parsed successfully: $signupResponse');
 
-        // If API response contains error field with content, throw exception with that error
         if (!signupResponse.success && signupResponse.error.isNotEmpty) {
           Logger.e('API responded with error: ${signupResponse.error}');
           throw Exception(signupResponse.error);
         }
 
-        // Save token if successful
         if (signupResponse.success && signupResponse.tokenId.isNotEmpty) {
           Logger.d('Saving signup token ID: ${signupResponse.tokenId}');
-          await _tokenStorageService.saveLoginTokens(
-            '', // Empty for now
-            signupResponse.tokenId,
-          );
+          await _tokenStorageService.saveLoginTokens('', signupResponse.tokenId,);
           Logger.d('Signup token ID saved successfully');
         } else {
           Logger.w('Signup unsuccessful: ${signupResponse.error}');
@@ -293,13 +266,9 @@ class AuthService {
   }) async {
     try {
       Logger.d('Starting verify signup OTP API call');
-
-      // Generate reCaptcha token for signup verification
       Logger.d('Generating reCAPTCHA token for signup verification');
       final reCaptchaToken = await _recaptchaService.generateSignUpVerificationToken();
       Logger.d('reCAPTCHA verification token generated successfully');
-
-      // Determine platform
       final platformName = Platform.isAndroid ? 'android' : 'ios';
       Logger.d('Platform: $platformName');
 
@@ -311,11 +280,7 @@ class AuthService {
         platform: platformName,
       );
 
-      Logger.api(
-        'Verify Signup Request prepared',
-        endpoint: ApiEndpoints.verifySignUpOtp,
-        data: verifySignupRequest.toJson(),
-      );
+      Logger.api('Verify Signup Request prepared', endpoint: ApiEndpoints.verifySignUpOtp, data: verifySignupRequest.toJson(),);
 
       final response = await _apiClient.postJson<Map<String, dynamic>>(
         ApiEndpoints.verifySignUpOtp,
@@ -340,7 +305,6 @@ class AuthService {
           throw Exception(verifySignupResponse.error);
         }
 
-        // Save tokens if successful and call verifyLoginWithToken
         if (verifySignupResponse.success) {
           if (verifySignupResponse.loginToken.isNotEmpty && verifySignupResponse.loginTokenId.isNotEmpty) {
             Logger.d('Calling verifyLoginWithToken after successful signup verification');
@@ -394,7 +358,6 @@ class AuthService {
   }) async {
     try {
       Logger.d('Starting verify login with token API call');
-
       Logger.d('Generating FCM token');
       final firebaseToken = await _fcmService.getToken();
       Logger.d('FCM token generated successfully');
@@ -405,11 +368,7 @@ class AuthService {
         firebaseToken: firebaseToken,
       );
 
-      Logger.api(
-        'Verify Login Token Request prepared',
-        endpoint: ApiEndpoints.verifyLoginWithToken,
-        data: verifyLoginTokenRequest.toJson(),
-      );
+      Logger.api('Verify Login Token Request prepared', endpoint: ApiEndpoints.verifyLoginWithToken, data: verifyLoginTokenRequest.toJson(),);
 
       final response = await _apiClient.postJson<Map<String, dynamic>>(
         ApiEndpoints.verifyLoginWithToken,
@@ -467,16 +426,12 @@ class AuthService {
     try {
       Logger.d('Starting logout API call');
 
-      // Get JWT token for authorization
       final jwtToken = await _tokenStorageService.getJWTToken();
       if (jwtToken == null || jwtToken.isEmpty) {
         throw Exception('JWT token not found. User may not be logged in.');
       }
 
-      Logger.api(
-        'Logout Request prepared',
-        endpoint: ApiEndpoints.logout,
-      );
+      Logger.api('Logout Request prepared', endpoint: ApiEndpoints.logout,);
 
       final response = await _apiClient.get<Map<String, dynamic>>(
         ApiEndpoints.logout,
@@ -504,7 +459,6 @@ class AuthService {
         }
 
         if (logoutResponse.success) {
-          // Clear all tokens after successful logout
           await _tokenStorageService.clearAllTokens();
           Logger.d('User logged out successfully and tokens cleared');
         }
@@ -534,16 +488,12 @@ class AuthService {
     try {
       Logger.d('Starting get customer profile API call');
 
-      // Get JWT token for authorization
       final jwtToken = await _tokenStorageService.getJWTToken();
       if (jwtToken == null || jwtToken.isEmpty) {
         throw Exception('JWT token not found. User may not be logged in.');
       }
 
-      Logger.api(
-        'Get Customer Profile Request prepared',
-        endpoint: ApiEndpoints.getCustomer,
-      );
+      Logger.api('Get Customer Profile Request prepared', endpoint: ApiEndpoints.getCustomer,);
 
       final response = await _apiClient.get<Map<String, dynamic>>(
         ApiEndpoints.getCustomer,

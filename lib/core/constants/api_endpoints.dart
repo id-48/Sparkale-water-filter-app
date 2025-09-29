@@ -2,8 +2,7 @@ class ApiEndpoints {
   ApiEndpoints._();
 
   // Base URL
-  static const String baseUrl =
-      'https://4wjn4k6yxc.execute-api.ap-south-1.amazonaws.com/development';
+  static const String baseUrl = 'https://4wjn4k6yxc.execute-api.ap-south-1.amazonaws.com/development';
 
   // Auth
   static const String login = '/v1/login';

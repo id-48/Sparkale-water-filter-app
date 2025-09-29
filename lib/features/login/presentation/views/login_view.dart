@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_images.dart';
 import '../../../../core/utils/translation_helper.dart';
+import '../../../../core/utils/status_bar_util.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../controllers/login_controller.dart';
 
@@ -16,29 +17,34 @@ class LoginView extends GetView<LoginController> {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
+    StatusBarUtil.setStatusBarStyle();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(height: screenHeight * 0.04),
-              _buildLogoSection(context),
-              SizedBox(height: screenHeight * 0.08),
-              _buildLoginTitleSection(),
-              SizedBox(height: screenHeight * 0.06),
-              _buildEmailInputSection(),
-              SizedBox(height: screenHeight * 0.03),
-              _buildSendOtpButton(),
-              // SizedBox(height: screenHeight * 0.03),
-              // _buildDivider(),
-              // SizedBox(height: screenHeight * 0.03),
-              // _buildGoogleSignInButton(),
-              SizedBox(height: screenHeight * 0.06),
-              _buildSignUpLink(),
-            ],
+          child: Form(
+            key: controller.formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(height: screenHeight * 0.04),
+                _buildLogoSection(context),
+                SizedBox(height: screenHeight * 0.08),
+                _buildLoginTitleSection(),
+                SizedBox(height: screenHeight * 0.06),
+                _buildEmailInputSection(),
+                SizedBox(height: screenHeight * 0.03),
+                _buildSendOtpButton(),
+                // SizedBox(height: screenHeight * 0.03),
+                // _buildDivider(),
+                // SizedBox(height: screenHeight * 0.03),
+                // _buildGoogleSignInButton(),
+                SizedBox(height: screenHeight * 0.06),
+                _buildSignUpLink(),
+              ],
+            ),
           ),
         ),
       ),
@@ -130,6 +136,7 @@ class LoginView extends GetView<LoginController> {
                 ? TextInputType.emailAddress
                 : TextInputType.number,
             maxLength: controller.isEmailInput.value ? null : 10,
+            validator: controller.validateEmailOrPhone,
             prefixIcon: controller.isEmailInput.value
                 ? null
                 : CountryCodePicker(
@@ -143,7 +150,8 @@ class LoginView extends GetView<LoginController> {
                     alignLeft: false,
                     showDropDownButton: true,
                     showFlag: true,
-                    flagWidth: 20,
+                    hideMainText: true,
+                    flagWidth: 30,
                     textStyle: const TextStyle(
                       fontSize: AppConstants.defaultFontSize,
                       color: AppColors.textSecondary,
@@ -164,34 +172,38 @@ class LoginView extends GetView<LoginController> {
     return SizedBox(
       width: double.infinity,
       height: 56,
-      child: Obx(() => ElevatedButton(
-        onPressed: controller.isLoading.value ? null : () => controller.sendOtp(),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
+      child: Obx(
+        () => ElevatedButton(
+          onPressed: controller.isLoading.value
+              ? null
+              : () => controller.sendOtp(),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
+            ),
+            disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.6),
           ),
-          disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.6),
+          child: controller.isLoading.value
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.white,
+                  ),
+                )
+              : Text(
+                  Tr.sendOtp,
+                  style: const TextStyle(
+                    fontSize: AppConstants.mediumFontSize,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
         ),
-        child: controller.isLoading.value
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppColors.white,
-                ),
-              )
-            : Text(
-                Tr.sendOtp,
-                style: const TextStyle(
-                  fontSize: AppConstants.mediumFontSize,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-      )),
+      ),
     );
   }
 

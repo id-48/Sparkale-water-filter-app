@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/constants/clarity_config.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/utils/api_error_handler.dart';
 import '../../../../core/services/toast_service.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/token_storage_service.dart';
+import '../../../../core/services/clarity_service.dart';
 
 class EmailVerificationController extends GetxController {
   final TextEditingController otpController = TextEditingController();
@@ -24,8 +26,6 @@ class EmailVerificationController extends GetxController {
   final RxString currentOTP = ''.obs;
   Map<String, dynamic>? arguments = Get.arguments as Map<String, dynamic>?;
 
-
-  // Services for API calls
   final AuthService _authService = AuthService();
   final TokenStorageService _tokenStorageService = TokenStorageService();
 
@@ -34,26 +34,22 @@ class EmailVerificationController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    ClarityService.to.trackScreenView(ClarityConfig.screenEmailVerification);
     _initializeEmail();
 
     flow.value = arguments?["flow"] ?? "";
-    print("flow==== $flow");
     Logger.i('EmailVerificationController initialized');
   }
 
   @override
   void onClose() {
-    // Dispose controller
     otpController.dispose();
-
-    // Cancel timers
     _resendTimer?.cancel();
 
     super.onClose();
   }
 
   void _initializeEmail() {
-    // Get email and tokenId or loginTokenId from arguments
     final arguments = Get.arguments;
     if (arguments != null && arguments is Map<String, dynamic>) {
       userEmail.value = arguments['email'] ?? '';
@@ -89,7 +85,6 @@ class EmailVerificationController extends GetxController {
       isLoading.value = true;
       Logger.d('Starting email OTP verification for: ${userEmail.value}');
 
-      // Check if this is a signup flow or login flow
       if (flow.value == 'register') {
         await _verifySignupEmailOTP(otp);
       } else {
@@ -99,7 +94,6 @@ class EmailVerificationController extends GetxController {
     } catch (e, st) {
       Logger.e('Error verifying email OTP', error: e, stackTrace: st);
       
-      // Use centralized error handler
       final errorMessage = ApiErrorHandler.handleError(e);
       ToastService.error(errorMessage);
     } finally {
@@ -108,10 +102,8 @@ class EmailVerificationController extends GetxController {
   }
 
   Future<void> _verifyLoginEmailOTP(String otp) async {
-    // Get loginTokenId from storage if available
     String loginTokenIdValue = loginTokenId.value;
     if (loginTokenIdValue.isEmpty) {
-      // Try to get it from storage
       final tokens = await _tokenStorageService.getLoginTokens();
       loginTokenIdValue = tokens['loginTokenId'] ?? '';
     }
@@ -121,11 +113,8 @@ class EmailVerificationController extends GetxController {
       return;
     }
 
-    // Determine platform
     final platform = Platform.isAndroid ? 'android' : 'ios';
     Logger.d('Platform: $platform');
-
-    // Make verify login API call
     Logger.d('Making verify login API call');
     final verifyResponse = await _authService.verifyLogin(
       loginTokenId: loginTokenIdValue,
@@ -137,10 +126,20 @@ class EmailVerificationController extends GetxController {
       Logger.d('Email OTP verification successful');
       ToastService.success('Email verification successful');
       
-      // Navigate to main screen
+      ClarityService.to.trackAuthEvent(ClarityConfig.eventOtpVerified, properties: {
+        'type': 'email',
+        'flow': 'login'
+      });
+      
+      ClarityService.to.trackNavigation(ClarityConfig.screenEmailVerification, ClarityConfig.screenHome);
       Get.offAllNamed('/main');
     } else {
       Logger.w('Email OTP verification failed: ${verifyResponse.error}');
+      ClarityService.to.trackAuthEvent(ClarityConfig.eventOtpFailed, properties: {
+        'type': 'email',
+        'flow': 'login',
+        'error': verifyResponse.error
+      });
       final errorMessage = verifyResponse.error.isNotEmpty 
           ? verifyResponse.error 
           : 'OTP verification failed. Please try again.';
@@ -154,19 +153,15 @@ class EmailVerificationController extends GetxController {
       return;
     }
 
-    // Determine platform
     final platform = Platform.isAndroid ? 'android' : 'ios';
     Logger.d('Platform: $platform');
 
-    // Check if we have both mobile and email OTPs (from mobile verification flow)
     String mobileOtpToSend = mobileOtp.value;
     String emailOtpToSend = otp;
 
     if (mobileOtpToSend.isNotEmpty) {
-      // Both mobile and email verification
       Logger.d('Making verify signup API call with both mobile and email OTPs');
     } else {
-      // Email-only verification
       Logger.d('Making verify signup API call for email-only');
     }
 
@@ -180,8 +175,6 @@ class EmailVerificationController extends GetxController {
     if (verifyResponse.success) {
       Logger.d('Email OTP verification successful');
       ToastService.success('Login Successful');
-      
-      // Navigate to main screen
       Get.offAllNamed('/main');
     } else {
       Logger.w('Email OTP verification failed: ${verifyResponse.error}');
@@ -195,8 +188,17 @@ class EmailVerificationController extends GetxController {
   Future<void> verifyOTP() async {
     final otp = _getOTP();
     if (otp.length == 6) {
+      ClarityService.to.trackUserAction(ClarityConfig.actionSendOtp, properties: {
+        'status': 'verify_attempt',
+        'screen': 'email_verification',
+        'flow': flow.value
+      });
       await _verifyOTP(otp);
     } else {
+      ClarityService.to.trackUserAction(ClarityConfig.actionSendOtp, properties: {
+        'status': 'incomplete_otp',
+        'screen': 'email_verification'
+      });
       ToastService.error('Please enter the complete OTP');
     }
   }
@@ -211,15 +213,19 @@ class EmailVerificationController extends GetxController {
 
     try {
       isLoading.value = true;
+      
+      ClarityService.to.trackUserAction(ClarityConfig.actionSendOtp, properties: {
+        'status': 'resend_attempt',
+        'screen': 'email_verification',
+        'flow': flow.value
+      });
 
       await Future.delayed(const Duration(seconds: 1));
 
       Logger.i('OTP resent successfully');
 
-      // Start countdown timer
       _startResendCountdown();
 
-      // Clear current OTP fields
       _clearOTPFields();
     } catch (e) {
       Logger.e('Failed to resend OTP', error: e);

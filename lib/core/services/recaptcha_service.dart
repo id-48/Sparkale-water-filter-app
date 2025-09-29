@@ -1,10 +1,7 @@
 import 'dart:io' show Platform;
-import 'package:get/get.dart';
 import '../utils/logger.dart';
-import 'package:flutter/services.dart';
 import 'package:recaptcha_enterprise_flutter/recaptcha.dart';
 import 'package:recaptcha_enterprise_flutter/recaptcha_client.dart';
-import 'package:recaptcha_enterprise_flutter/recaptcha_enterprise.dart';
 import 'package:recaptcha_enterprise_flutter/recaptcha_action.dart';
 import 'toast_service.dart';
 

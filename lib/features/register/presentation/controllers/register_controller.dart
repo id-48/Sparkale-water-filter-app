@@ -2,10 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:country_code_picker/country_code_picker.dart';
+import '../../../../core/constants/clarity_config.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/utils/api_error_handler.dart';
 import '../../../../core/services/toast_service.dart';
 import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/clarity_service.dart';
 
 class RegisterController extends GetxController {
 
@@ -19,16 +21,16 @@ class RegisterController extends GetxController {
   
   final RxBool isTermsAccepted = false.obs;
   final RxBool isLoading = false.obs;
-  final RxString selectedCountryCode = '+91'.obs; // Changed default to +91 to match CountryCodePicker initialSelection
-  final RxString selectedCountryFlag = '🇮🇳'.obs; // Changed flag to match India
+  final RxString selectedCountryCode = '+91'.obs;
+  final RxString selectedCountryFlag = '🇮🇳'.obs;
   
-  // Services
   final AuthService _authService = AuthService();
 
   @override
   void onInit() {
     super.onInit();
     _formKey = GlobalKey<FormState>(debugLabel: 'RegisterForm_${DateTime.now().millisecondsSinceEpoch}');
+    ClarityService.to.trackScreenView(ClarityConfig.screenRegister);
     Logger.i('RegisterController initialized with default country code: ${selectedCountryCode.value}');
   }
   
@@ -52,7 +54,6 @@ class RegisterController extends GetxController {
     Logger.i('Selected country code updated to: ${selectedCountryCode.value}');
   }
   
-  // Terms and Conditions Toggle
   void toggleTermsAcceptance() {
     isTermsAccepted.value = !isTermsAccepted.value;
     Logger.d('Terms acceptance toggled: ${isTermsAccepted.value}');
@@ -64,68 +65,44 @@ class RegisterController extends GetxController {
   }
 
   
-  // Register User
   Future<void> registerUser() async {
     if (isLoading.value) return;
+    
+    // Validate form first
+    if (!_formKey.currentState!.validate()) {
+      ClarityService.to.trackUserAction(ClarityConfig.actionSendOtp, properties: {'status': 'validation_failed', 'screen': 'register'});
+      return;
+    }
+    
     if (!isTermsAccepted.value) {
       ToastService.error('Please accept Terms & Conditions');
+      ClarityService.to.trackUserAction(ClarityConfig.actionSendOtp, properties: {'status': 'terms_not_accepted', 'screen': 'register'});
       return;
     }
 
-    // Validate form fields
     final String firstName = firstNameController.text.trim();
     final String lastName = lastNameController.text.trim();
     final String email = emailController.text.trim();
     final String mobile = phoneController.text.trim();
 
-    // Check required field validation
-    if (firstName.isEmpty) {
-      ToastService.error('First name is required');
-      return;
-    }
-
-    if (lastName.isEmpty) {
-      ToastService.error('Last name is required');
-      return;
-    }
-
-    // At least one of email or phone must be provided
-    if (email.isEmpty && mobile.isEmpty) {
-      ToastService.error('Email or phone number is required');
-      return;
-    }
-
-    if (email.isNotEmpty) {
-      // Validate email format if provided
-      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-      if (!emailRegex.hasMatch(email)) {
-        ToastService.error('Please enter a valid email address');
-        return;
-      }
-    }
-
-    if (mobile.isNotEmpty) {
-      // Validate phone format if provided
-      final phoneRegex = RegExp(r'^[+]?[0-9]{10,15}$');
-      if (!phoneRegex.hasMatch(mobile)) {
-        ToastService.error('Please enter a valid phone number');
-        return;
-      }
-    }
-
     try {
       isLoading.value = true;
+      
+      ClarityService.to.trackUserAction(ClarityConfig.actionSendOtp, properties: {
+        'status': 'attempt',
+        'screen': 'register',
+        'has_email': email.isNotEmpty,
+        'has_mobile': mobile.isNotEmpty
+      });
       
       final String countryCode = selectedCountryCode.value.replaceAll('+', '');
       Logger.d('Starting registration process for: $firstName $lastName');
 
-      // Determine which field to use for signup
       String mobileNoForApi = '';
       if (mobile.isNotEmpty) {
         mobileNoForApi = mobile;
       } else if (email.isNotEmpty) {
-        // If only email provided but no phone, use email
-        mobileNoForApi = ''; // Will be managed by API if needed
+        mobileNoForApi = '';
       }
 
       // Determine platform
@@ -146,10 +123,14 @@ class RegisterController extends GetxController {
       if (signupResponse.success) {
         Logger.d('Code Send Successfully');
         ToastService.success('Code Send Successfully');
+        
+        ClarityService.to.trackAuthEvent(ClarityConfig.eventSignupSuccess, properties: {
+          'has_email': email.isNotEmpty,
+          'has_mobile': mobile.isNotEmpty
+        });
 
-        // Navigate based on signup response
         if (signupResponse.verifyMobileNoOTP && signupResponse.verifyEmailOTP) {
-          // Both email and mobile verification needed
+          ClarityService.to.trackNavigation(ClarityConfig.screenRegister, ClarityConfig.screenMobileVerification);
           Get.toNamed('/mobile-verification', arguments: {
             'mobile': mobile,
             'countryCode': countryCode,
@@ -159,7 +140,7 @@ class RegisterController extends GetxController {
             'flow': 'register'
           });
         } else if (signupResponse.verifyMobileNoOTP && mobile.isNotEmpty) {
-          // Only mobile verification needed
+          ClarityService.to.trackNavigation(ClarityConfig.screenRegister, ClarityConfig.screenMobileVerification);
           Get.toNamed('/mobile-verification', arguments: {
             'mobile': mobile,
             'countryCode': countryCode,
@@ -167,7 +148,7 @@ class RegisterController extends GetxController {
             'flow': 'register'
           });
         } else if (signupResponse.verifyEmailOTP && email.isNotEmpty) {
-          // Only email verification needed
+          ClarityService.to.trackNavigation(ClarityConfig.screenRegister, ClarityConfig.screenEmailVerification);
           Get.toNamed('/email-verification', arguments: {
             'email': email,
             'tokenId': signupResponse.tokenId,
@@ -176,6 +157,11 @@ class RegisterController extends GetxController {
         }
       } else {
         Logger.w('Registration failed: ${signupResponse.error}');
+        ClarityService.to.trackAuthEvent(ClarityConfig.eventSignupFailed, properties: {
+          'error': signupResponse.error,
+          'has_email': email.isNotEmpty,
+          'has_mobile': mobile.isNotEmpty
+        });
         final errorMessage = signupResponse.error.isNotEmpty 
             ? signupResponse.error 
             : 'Registration failed. Please try again.';
@@ -184,8 +170,11 @@ class RegisterController extends GetxController {
 
     } catch (e, st) {
       Logger.e('Registration error', error: e, stackTrace: st);
-      
-      // Use centralized error handler
+      ClarityService.to.trackError(ClarityConfig.errorApi, e.toString(), properties: {
+        'action': 'register',
+        'has_email': email.isNotEmpty,
+        'has_mobile': mobile.isNotEmpty
+      });
       final errorMessage = ApiErrorHandler.handleError(e);
       ToastService.error(errorMessage);
     } finally {
@@ -193,17 +182,14 @@ class RegisterController extends GetxController {
     }
   }
   
-  // Google Sign Up
   Future<void> signUpWithGoogle() async {
     try {
       isLoading.value = true;
       
-      // Simulate Google Sign Up
       await Future.delayed(const Duration(seconds: 2));
       
       Logger.i('Google Sign Up successful');
       
-      // Navigate to home
       Get.offAllNamed('/main');
       
     } catch (e) {
@@ -213,20 +199,60 @@ class RegisterController extends GetxController {
     }
   }
   
-  // Navigate to Login
   void navigateToLogin() {
     Get.back();
   }
   
-  // Navigate to Terms of Service
   void navigateToTermsOfService() {
     Logger.i('Navigate to Terms of Service');
-    // Terms of Service page will be implemented
   }
   
-  // Navigate to Privacy Policy
   void navigateToPrivacyPolicy() {
     Logger.i('Navigate to Privacy Policy');
-    // Privacy Policy page will be implemented
+  }
+  
+  // Validation methods for form fields
+  String? validateFirstName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'First name is required';
+    }
+    if (value.trim().length < 2) {
+      return 'First name must be at least 2 characters';
+    }
+    return null;
+  }
+  
+  String? validateLastName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Last name is required';
+    }
+    if (value.trim().length < 2) {
+      return 'Last name must be at least 2 characters';
+    }
+    return null;
+  }
+  
+  String? validatePhoneNumber(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Phone number is required';
+    }
+    if (value.trim().length != 10) {
+      return 'Phone number must be 10 digits';
+    }
+    if (!RegExp(r'^[0-9]+$').hasMatch(value.trim())) {
+      return 'Phone number must contain only digits';
+    }
+    return null;
+  }
+  
+  String? validateEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Email is required';
+    }
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(value.trim())) {
+      return 'Please enter a valid email address';
+    }
+    return null;
   }
 }
