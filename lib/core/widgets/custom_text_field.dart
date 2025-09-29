@@ -68,19 +68,7 @@ class CustomTextField extends StatelessWidget {
           ),
           const SizedBox(height: AppConstants.smallPadding),
         ],
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(borderRadius ?? AppConstants.defaultRadius),
-            boxShadow: [
-              BoxShadow(
-                offset: const Offset(0, 1),
-                blurRadius: 2,
-                spreadRadius: 0,
-                color: Colors.black.withValues(alpha: 0.1),
-              ),
-            ],
-          ),
-          child: TextFormField(
+        TextFormField(
           controller: controller,
           keyboardType: keyboardType,
           obscureText: obscureText,
@@ -103,36 +91,52 @@ class CustomTextField extends StatelessWidget {
             suffixIcon: suffixIcon,
             filled: true,
             fillColor: fillColor ?? AppColors.white,
-            contentPadding: contentPadding ?? const EdgeInsets.symmetric(
-              horizontal: AppConstants.defaultPadding,
-              vertical: AppConstants.defaultPadding,
-            ),
+            contentPadding:
+                contentPadding ??
+                const EdgeInsets.symmetric(
+                  horizontal: AppConstants.defaultPadding,
+                  vertical: AppConstants.defaultPadding,
+                ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(borderRadius ?? AppConstants.defaultRadius),
               borderSide: BorderSide(color: borderColor ?? AppColors.border),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(borderRadius ?? AppConstants.defaultRadius),
+              borderRadius: BorderRadius.circular(
+                borderRadius ?? AppConstants.defaultRadius,
+              ),
               borderSide: BorderSide(color: borderColor ?? AppColors.border),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(borderRadius ?? AppConstants.defaultRadius),
+              borderRadius: BorderRadius.circular(
+                borderRadius ?? AppConstants.defaultRadius,
+              ),
               borderSide: BorderSide(
                 color: focusedBorderColor ?? AppColors.primary,
                 width: 2,
               ),
             ),
-            errorBorder: showErrorBorder ? OutlineInputBorder(
-              borderRadius: BorderRadius.circular(borderRadius ?? AppConstants.defaultRadius),
-              borderSide: const BorderSide(color: AppColors.error),
-            ) : null,
-            focusedErrorBorder: showErrorBorder ? OutlineInputBorder(
-              borderRadius: BorderRadius.circular(borderRadius ?? AppConstants.defaultRadius),
-              borderSide: const BorderSide(color: AppColors.error, width: 2),
-            ) : null,
+            errorBorder: showErrorBorder
+                ? OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(
+                      borderRadius ?? AppConstants.defaultRadius,
+                    ),
+                    borderSide: const BorderSide(color: AppColors.error),
+                  )
+                : null,
+            focusedErrorBorder: showErrorBorder
+                ? OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(
+                      borderRadius ?? AppConstants.defaultRadius,
+                    ),
+                    borderSide: const BorderSide(
+                      color: AppColors.error,
+                      width: 2,
+                    ),
+                  )
+                : null,
             counterText: '',
           ),
-        ),
         ),
       ],
     );

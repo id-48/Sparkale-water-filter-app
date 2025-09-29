@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/constants/clarity_config.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/utils/api_error_handler.dart';
 import '../../../../core/services/toast_service.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/token_storage_service.dart';
+import '../../../../core/services/clarity_service.dart';
 
 class MobileVerificationController extends GetxController {
   final TextEditingController otpController = TextEditingController();
@@ -32,6 +34,7 @@ class MobileVerificationController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    ClarityService.to.trackScreenView(ClarityConfig.screenMobileVerification);
     _initializeMobile();
     flow.value = arguments?["flow"] ?? "";
 
@@ -62,6 +65,7 @@ class MobileVerificationController extends GetxController {
   }
 
   void onOTPChanged(String value) {
+    print('your value is ===> ${value}');
     currentOTP.value = value;
   }
   

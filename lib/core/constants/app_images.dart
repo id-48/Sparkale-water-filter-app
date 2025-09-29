@@ -3,6 +3,7 @@ class AppImages {
   static const String _iconsPath = 'assets/icons/';
   
   static const String splashLogo = '${_basePath}splash_logo.png';
+  static const String indianFlag = '${_basePath}india_flag.png';
 
   // Icons
   static const String call = '${_iconsPath}call.png';
@@ -15,6 +16,7 @@ class AppImages {
   static const String card = '${_iconsPath}card.png';
   static const String success = '${_iconsPath}success.png';
   static const String error = '${_iconsPath}error.png';
+  static const String dropDown = '${_iconsPath}drop_down.png';
 
 
 }

@@ -2,12 +2,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:country_code_picker/country_code_picker.dart';
-import '../../../../core/constants/app_strings.dart';
+import '../../../../core/constants/clarity_config.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/utils/api_error_handler.dart';
 import '../../../../core/services/toast_service.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/recaptcha_service.dart';
+import '../../../../core/services/clarity_service.dart';
 
 class LoginController extends GetxController {
   final TextEditingController emailController = TextEditingController();
@@ -27,6 +28,7 @@ class LoginController extends GetxController {
   void onInit() {
     super.onInit();
     _formKey = GlobalKey<FormState>(debugLabel: 'LoginForm_${DateTime.now().millisecondsSinceEpoch}');
+    ClarityService.to.trackScreenView(ClarityConfig.screenLogin);
   }
   
   @override
@@ -39,22 +41,36 @@ class LoginController extends GetxController {
     isEmailInput.value = !isEmailInput.value;
     emailController.clear();
     Logger.d('Input type toggled to: ${isEmailInput.value ? "Email" : "Mobile"}');
+    ClarityService.to.trackUserAction(ClarityConfig.actionToggleInputType, properties: {
+      'input_type': isEmailInput.value ? 'email' : 'mobile'
+    });
   }
 
   void selectCountry(CountryCode country) {
     selectedCountry.value = country;
     Logger.d('Country selected: ${country.name} (${country.dialCode})');
+    ClarityService.to.trackUserAction(ClarityConfig.actionSelectCountry, properties: {
+      'country_name': country.name,
+      'country_code': country.dialCode,
+    });
   }
   
   Future<void> sendOtp() async {
     // Validate form first
     if (!_formKey.currentState!.validate()) {
+      ClarityService.to.trackUserAction(ClarityConfig.actionSendOtp, properties: {'status': 'validation_failed'});
       return;
     }
     
     try {
       isLoading.value = true;
       final inputValue = emailController.text.trim();
+      
+      ClarityService.to.trackUserAction(ClarityConfig.actionSendOtp, properties: {
+        'input_type': isEmailInput.value ? 'email' : 'mobile',
+        'country_code': selectedCountry.value.dialCode,
+        'status': 'attempt'
+      });
       
       final reCaptchaToken = await _recaptchaService.generateLoginToken();
       final platform = Platform.isAndroid ? 'android' : 'ios';
@@ -76,13 +92,19 @@ class LoginController extends GetxController {
       if (loginResponse.success) {
         Logger.d('Login API call successful');
         ToastService.success('Code Send Successfully');
+        
+        ClarityService.to.trackAuthEvent(ClarityConfig.eventOtpSent, properties: {
+          'input_type': isEmailInput.value ? 'email' : 'mobile',
+        });
 
         if (isEmailInput.value) {
+          ClarityService.to.trackNavigation(ClarityConfig.screenLogin, ClarityConfig.screenEmailVerification);
           Get.toNamed('/email-verification', arguments: {
             'email': inputValue,
             'flow': 'login'
           });
         } else {
+          ClarityService.to.trackNavigation(ClarityConfig.screenLogin, ClarityConfig.screenMobileVerification);
           Get.toNamed('/mobile-verification', arguments: {
             'mobileNo': inputValue,
             'countryCode': selectedCountry.value.dialCode ?? "",
@@ -91,6 +113,10 @@ class LoginController extends GetxController {
         }
       } else {
         Logger.w('Login API call failed: ${loginResponse.error}');
+        ClarityService.to.trackAuthEvent(ClarityConfig.eventOtpFailed, properties: {
+          'error': loginResponse.error,
+          'input_type': isEmailInput.value ? 'email' : 'mobile',
+        });
         final errorMessage = loginResponse.error.isNotEmpty
             ? loginResponse.error 
             : 'Login failed. Please try again.';
@@ -99,6 +125,10 @@ class LoginController extends GetxController {
       
     } catch (e) {
       final errorMessage = ApiErrorHandler.handleError(e);
+      ClarityService.to.trackError(ClarityConfig.errorApi, errorMessage, properties: {
+        'input_type': isEmailInput.value ? 'email' : 'mobile',
+        'action': 'send_otp'
+      });
       _showErrorToast(errorMessage);
     } finally {
       isLoading.value = false;
@@ -118,6 +148,7 @@ class LoginController extends GetxController {
   
   void navigateToSignUp() {
     Logger.d('Navigate to Sign Up');
+    ClarityService.to.trackNavigation(ClarityConfig.screenLogin, ClarityConfig.screenRegister);
     Get.toNamed('/register');
   }
   
@@ -125,7 +156,6 @@ class LoginController extends GetxController {
     ToastService.error(message);
   }
   
-  // Validation methods for form fields
   String? validateEmailOrPhone(String? value) {
     if (value == null || value.trim().isEmpty) {
       return isEmailInput.value ? 'Email is required' : 'Phone number is required';

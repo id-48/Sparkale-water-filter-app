@@ -1,8 +1,10 @@
 import 'package:get/get.dart';
+import '../../../../core/constants/clarity_config.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/utils/api_error_handler.dart';
 import '../../../../core/services/toast_service.dart';
 import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/clarity_service.dart';
 import '../../../../core/models/auth/profile/customer.dart';
 import '../widgets/language_selection_dialog.dart';
 
@@ -16,6 +18,7 @@ class ProfileController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    ClarityService.to.trackScreenView(ClarityConfig.screenProfile);
     Logger.i('ProfileController initialized');
     _fetchProfileData();
   }

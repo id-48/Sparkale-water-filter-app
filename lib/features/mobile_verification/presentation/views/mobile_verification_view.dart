@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:otp_pin_field/otp_pin_field.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_images.dart';
 import '../../../../core/utils/translation_helper.dart';
 import '../../../../core/utils/status_bar_util.dart';
+import '../../../../core/widgets/custom_otp_field.dart';
 import '../../presentation/controllers/mobile_verification_controller.dart';
 
 class MobileVerificationView extends GetView<MobileVerificationController> {
@@ -178,34 +178,34 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
               BorderSide(color: AppColors.border, width: 1),
             ),
           ),
-          child: OtpPinField(
-              maxLength: 6,
-              fieldWidth: 37,
-              fieldHeight: 40,
-              autoFocus: false,
-              cursorColor: AppColors.primary,
-              highlightBorder: false,
-              otpPinFieldStyle: const OtpPinFieldStyle(
-                hintText: '0',
-                showHintText: true,
-                activeFieldBorderColor: AppColors.white,
-                fieldBorderRadius: 0,
-                defaultFieldBorderColor: AppColors.white,
-                filledFieldBorderColor: AppColors.white,
-                fieldBorderWidth: 0,
-                hintTextColor: AppColors.grey,
-                textStyle: TextStyle(
-                  fontSize: AppConstants.largeFontSize,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
-                ),
-              ),
-              autoFillEnable: true,
-              showCursor: true,
-              keyboardType: TextInputType.number,
-              onChange: (value) => controller.onOTPChanged(value),
-              onSubmit: (String text) {},
-
+          child: CustomOTPField(
+            length: 6,
+            fieldWidth: 37,
+            fieldHeight: 40,
+            autoFocus: false,
+            cursorColor: AppColors.primary,
+            keyboardType: TextInputType.number,
+            // hintText: '0',
+            showHintText: false,
+            fieldBorderColor: AppColors.white,
+            activeFieldBorderColor: AppColors.white,
+            filledFieldBorderColor: AppColors.white,
+            fieldBorderRadius: 0,
+            fieldBorderWidth: 0,
+            hintTextColor: AppColors.grey,
+            textStyle: const TextStyle(
+              fontSize: AppConstants.largeFontSize,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primary,
+            ),
+            onChanged: (value) {
+              print('onCodeChanged ===> $value');
+              controller.onOTPChanged(value);
+            },
+            onCompleted: (value) {
+              print('OTP Completed: $value');
+              controller.onOTPChanged(value);
+            },
           ),
         ),
       ],

@@ -2,10 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:country_code_picker/country_code_picker.dart';
+import '../../../../core/constants/clarity_config.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/utils/api_error_handler.dart';
 import '../../../../core/services/toast_service.dart';
 import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/clarity_service.dart';
 
 class RegisterController extends GetxController {
 
@@ -28,6 +30,7 @@ class RegisterController extends GetxController {
   void onInit() {
     super.onInit();
     _formKey = GlobalKey<FormState>(debugLabel: 'RegisterForm_${DateTime.now().millisecondsSinceEpoch}');
+    ClarityService.to.trackScreenView(ClarityConfig.screenRegister);
     Logger.i('RegisterController initialized with default country code: ${selectedCountryCode.value}');
   }
   
@@ -67,11 +70,13 @@ class RegisterController extends GetxController {
     
     // Validate form first
     if (!_formKey.currentState!.validate()) {
+      ClarityService.to.trackUserAction(ClarityConfig.actionSendOtp, properties: {'status': 'validation_failed', 'screen': 'register'});
       return;
     }
     
     if (!isTermsAccepted.value) {
       ToastService.error('Please accept Terms & Conditions');
+      ClarityService.to.trackUserAction(ClarityConfig.actionSendOtp, properties: {'status': 'terms_not_accepted', 'screen': 'register'});
       return;
     }
 
@@ -82,6 +87,13 @@ class RegisterController extends GetxController {
 
     try {
       isLoading.value = true;
+      
+      ClarityService.to.trackUserAction(ClarityConfig.actionSendOtp, properties: {
+        'status': 'attempt',
+        'screen': 'register',
+        'has_email': email.isNotEmpty,
+        'has_mobile': mobile.isNotEmpty
+      });
       
       final String countryCode = selectedCountryCode.value.replaceAll('+', '');
       Logger.d('Starting registration process for: $firstName $lastName');
@@ -111,8 +123,14 @@ class RegisterController extends GetxController {
       if (signupResponse.success) {
         Logger.d('Code Send Successfully');
         ToastService.success('Code Send Successfully');
+        
+        ClarityService.to.trackAuthEvent(ClarityConfig.eventSignupSuccess, properties: {
+          'has_email': email.isNotEmpty,
+          'has_mobile': mobile.isNotEmpty
+        });
 
         if (signupResponse.verifyMobileNoOTP && signupResponse.verifyEmailOTP) {
+          ClarityService.to.trackNavigation(ClarityConfig.screenRegister, ClarityConfig.screenMobileVerification);
           Get.toNamed('/mobile-verification', arguments: {
             'mobile': mobile,
             'countryCode': countryCode,
@@ -122,6 +140,7 @@ class RegisterController extends GetxController {
             'flow': 'register'
           });
         } else if (signupResponse.verifyMobileNoOTP && mobile.isNotEmpty) {
+          ClarityService.to.trackNavigation(ClarityConfig.screenRegister, ClarityConfig.screenMobileVerification);
           Get.toNamed('/mobile-verification', arguments: {
             'mobile': mobile,
             'countryCode': countryCode,
@@ -129,6 +148,7 @@ class RegisterController extends GetxController {
             'flow': 'register'
           });
         } else if (signupResponse.verifyEmailOTP && email.isNotEmpty) {
+          ClarityService.to.trackNavigation(ClarityConfig.screenRegister, ClarityConfig.screenEmailVerification);
           Get.toNamed('/email-verification', arguments: {
             'email': email,
             'tokenId': signupResponse.tokenId,
@@ -137,6 +157,11 @@ class RegisterController extends GetxController {
         }
       } else {
         Logger.w('Registration failed: ${signupResponse.error}');
+        ClarityService.to.trackAuthEvent(ClarityConfig.eventSignupFailed, properties: {
+          'error': signupResponse.error,
+          'has_email': email.isNotEmpty,
+          'has_mobile': mobile.isNotEmpty
+        });
         final errorMessage = signupResponse.error.isNotEmpty 
             ? signupResponse.error 
             : 'Registration failed. Please try again.';
@@ -145,6 +170,11 @@ class RegisterController extends GetxController {
 
     } catch (e, st) {
       Logger.e('Registration error', error: e, stackTrace: st);
+      ClarityService.to.trackError(ClarityConfig.errorApi, e.toString(), properties: {
+        'action': 'register',
+        'has_email': email.isNotEmpty,
+        'has_mobile': mobile.isNotEmpty
+      });
       final errorMessage = ApiErrorHandler.handleError(e);
       ToastService.error(errorMessage);
     } finally {

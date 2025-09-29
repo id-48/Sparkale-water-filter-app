@@ -225,7 +225,6 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primary,
         onPrimary: AppColors.white,
