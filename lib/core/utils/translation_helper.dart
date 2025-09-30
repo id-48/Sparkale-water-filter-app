@@ -76,4 +76,5 @@ class Tr {
   static String get signIn => T.get('signIn');
   static String get language => T.get('language');
   static String get selectLanguage => T.get('selectLanguage');
+  static String get optional => T.get('optional');
 }

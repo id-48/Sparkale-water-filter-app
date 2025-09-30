@@ -1,6 +1,6 @@
 class ClarityConfig {
   // Replace with your actual Clarity project ID
-  static const String projectId = 'YOUR_CLARITY_PROJECT_ID';
+  static const String projectId = 'sparkle-water-filter-app';
   
   // Clarity configuration flags
   static const bool enableCrashReporting = true;
@@ -21,7 +21,11 @@ class ClarityConfig {
   static const String eventError = 'error';
   static const String eventNavigation = 'navigation';
   static const String eventFeatureUsage = 'feature_usage';
-  
+  static const String eventLoginEmailResendOtp = 'login_email_resend_otp';
+  static const String eventLoginMobileResendOtp = 'login_mobile_resend_otp';
+  static const String eventSignUpEmailResendOtp = 'signup_email_resend_otp';
+  static const String eventSignUpMobileResendOtp = 'signup_mobile_resend_otp';
+
   // Screen names
   static const String screenSplash = 'splash_screen';
   static const String screenLogin = 'login_screen';

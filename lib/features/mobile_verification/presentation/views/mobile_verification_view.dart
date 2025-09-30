@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:otp_pin_field/otp_pin_field.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_images.dart';
 import '../../../../core/utils/translation_helper.dart';
 import '../../../../core/utils/status_bar_util.dart';
-import '../../../../core/widgets/custom_otp_field.dart';
 import '../../presentation/controllers/mobile_verification_controller.dart';
 
 class MobileVerificationView extends GetView<MobileVerificationController> {
@@ -66,7 +66,7 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
             const SizedBox(width: 4),
             Obx(() {
               return Text(
-                controller.flow == "register"
+                controller.flow.value == "register"
                     ? Tr.backToRegister
                     : Tr.backToLogin,
                 style: const TextStyle(
@@ -152,7 +152,7 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
               ),
             ),
             TextSpan(
-              text: controller.formattedMobileNumber,
+              text: ' ${controller.formattedMobileNumber}',
               style: const TextStyle(
                 fontWeight: FontWeight.w400,
                 color: AppColors.textSecondary,
@@ -178,34 +178,40 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
               BorderSide(color: AppColors.border, width: 1),
             ),
           ),
-          child: CustomOTPField(
-            length: 6,
-            fieldWidth: 37,
-            fieldHeight: 40,
-            autoFocus: false,
-            cursorColor: AppColors.primary,
-            keyboardType: TextInputType.number,
-            // hintText: '0',
-            showHintText: false,
-            fieldBorderColor: AppColors.white,
-            activeFieldBorderColor: AppColors.white,
-            filledFieldBorderColor: AppColors.white,
-            fieldBorderRadius: 0,
-            fieldBorderWidth: 0,
-            hintTextColor: AppColors.grey,
-            textStyle: const TextStyle(
-              fontSize: AppConstants.largeFontSize,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
-            ),
-            onChanged: (value) {
-              print('onCodeChanged ===> $value');
-              controller.onOTPChanged(value);
+          child: OtpPinField(
+              maxLength: 6,
+              fieldWidth: 37,
+              fieldHeight: 40,
+              autoFocus: false,
+              cursorColor: AppColors.primary,
+              highlightBorder: false,
+              otpPinFieldStyle: const OtpPinFieldStyle(
+                // hintText: '0',
+                showHintText: false,
+                activeFieldBorderColor: AppColors.white,
+                fieldBorderRadius: 0,
+                defaultFieldBorderColor: AppColors.white,
+                filledFieldBorderColor: AppColors.white,
+                fieldBorderWidth: 0,
+                hintTextColor: AppColors.grey,
+                textStyle: TextStyle(
+                  fontSize: AppConstants.largeFontSize,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+              autoFillEnable: true,
+            onCodeChanged: (val){
+              // OTP code changed
             },
-            onCompleted: (value) {
-              print('OTP Completed: $value');
-              controller.onOTPChanged(value);
+            onPhoneHintSelected: (val){
+              // Phone hint selected
             },
+              showCursor: true,
+              keyboardType: TextInputType.number,
+              onChange: (value) => controller.onOTPChanged(value),
+              onSubmit: (String text) {},
+
           ),
         ),
       ],
@@ -236,9 +242,9 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
                     valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
                   ),
                 )
-              : const Text(
-                  'Verify OTP',
-                  style: TextStyle(
+              : Text(
+                  Tr.verifyOtp,
+                  style: const TextStyle(
                     fontSize: AppConstants.mediumFontSize,
                     fontWeight: FontWeight.w600,
                   ),
@@ -252,9 +258,9 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
     return Obx(
       () => Column(
         children: [
-          const Text(
-            'Code resend after',
-            style: TextStyle(
+          Text(
+            Tr.codeResendAfter,
+            style: const TextStyle(
               fontSize: AppConstants.mediumFontSize,
               color: AppColors.textSecondary,
               fontWeight: FontWeight.w400,
@@ -265,7 +271,7 @@ class MobileVerificationView extends GetView<MobileVerificationController> {
             onTap: controller.canResend.value ? controller.resendOTP : null,
             child: Text(
               controller.canResend.value
-                  ? 'Click to resend'
+                  ? Tr.clickToSend
                   : '00:${controller.resendCountdown.value.toString().padLeft(2, '0')}',
               style: TextStyle(
                 fontSize: AppConstants.mediumFontSize,
