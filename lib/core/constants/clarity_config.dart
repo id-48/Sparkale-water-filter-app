@@ -1,8 +1,6 @@
 class ClarityConfig {
-  // Replace with your actual Clarity project ID
   static const String projectId = 'tiex6efenm';
   
-  // Clarity configuration flags
   static const bool enableCrashReporting = true;
   static const bool enableLogging = true;
   
