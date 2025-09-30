@@ -1,6 +1,6 @@
 class ClarityConfig {
   // Replace with your actual Clarity project ID
-  static const String projectId = 'sparkle-water-filter-app';
+  static const String projectId = 'tiex6efenm';
   
   // Clarity configuration flags
   static const bool enableCrashReporting = true;
