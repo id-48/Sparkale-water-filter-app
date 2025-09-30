@@ -152,13 +152,13 @@ class RegisterView extends GetView<RegisterController> {
   }
 
   Widget _buildEmailInputSection() {
-    return CustomTextField(
+    return Obx(() => CustomTextField(
       controller: controller.emailController,
       labelText: Tr.email,
       hintText: Tr.enterEmail,
       keyboardType: TextInputType.emailAddress,
       validator: controller.validateEmail,
-    );
+    ));
   }
 
   Widget _buildTermsAndConditionsSection() {

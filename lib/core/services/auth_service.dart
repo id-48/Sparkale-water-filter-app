@@ -9,6 +9,10 @@ import '../models/auth/verify_signup/verify_signup_request.dart';
 import '../models/auth/verify_signup/verify_signup_response.dart';
 import '../models/auth/verify_login_token/verify_login_token_request.dart';
 import '../models/auth/verify_login_token/verify_login_token_response.dart';
+import '../models/auth/resend_login_otp/resend_login_otp_request.dart';
+import '../models/auth/resend_login_otp/resend_login_otp_response.dart';
+import '../models/auth/resend_signup_otp/resend_signup_otp_request.dart';
+import '../models/auth/resend_signup_otp/resend_signup_otp_response.dart';
 import '../models/auth/logout/logout_response.dart';
 import '../models/auth/profile/get_profile_response.dart';
 import '../constants/api_endpoints.dart';
@@ -417,6 +421,142 @@ class AuthService {
       }
     } catch (e, st) {
       Logger.e('Verify login with token service failed', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  /// Resend login OTP API call
+  Future<ResendLoginOtpResponse> resendLoginOtp({
+    required String loginTokenId,
+    required String reCaptchaToken,
+    String platform = 'android',
+  }) async {
+    try {
+      Logger.d('Starting resend login OTP API call');
+      final platformName = Platform.isAndroid ? 'android' : 'ios';
+      Logger.d('Platform: $platformName');
+
+      final resendRequest = ResendLoginOtpRequest(
+        loginTokenId: loginTokenId,
+        reCaptchaToken: reCaptchaToken,
+        platform: platformName,
+      );
+
+      Logger.api('Resend Login OTP Request prepared', endpoint: ApiEndpoints.resendLoginOtp, data: resendRequest.toJson(),);
+
+      final response = await _apiClient.postJson<Map<String, dynamic>>(
+        ApiEndpoints.resendLoginOtp,
+        data: resendRequest.toJson(),
+      );
+
+      Logger.d('Resend login OTP API response received with status: ${response.statusCode}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseData = response.data;
+        
+        if (responseData == null) {
+          throw Exception('Empty response received from resend login OTP API');
+        }
+
+        final resendResponse = ResendLoginOtpResponse.fromJson(responseData);
+        
+        Logger.d('Resend login OTP response parsed successfully: $resendResponse');
+
+        if (!resendResponse.success && resendResponse.error.isNotEmpty) {
+          Logger.e('API responded with error: ${resendResponse.error}');
+          throw Exception(resendResponse.error);
+        }
+
+        if (resendResponse.success && resendResponse.loginTokenId.isNotEmpty) {
+          Logger.d('Updating login token ID: ${resendResponse.loginTokenId}');
+          await _tokenStorageService.saveLoginTokens('', resendResponse.loginTokenId);
+          Logger.d('Login token ID updated successfully');
+        } else {
+          Logger.w('Resend login OTP unsuccessful: ${resendResponse.error}');
+        }
+
+        return resendResponse;
+      } else {
+        String errorMessage = 'Resend login OTP API failed with status: ${response.statusCode}';
+        
+        if (response.data is Map<String, dynamic>) {
+          final errorData = response.data as Map<String, dynamic>;
+          if (errorData.containsKey('error') && errorData['error'] != null) {
+            errorMessage = errorData['error'].toString();
+          }
+        }
+        
+        Logger.e('Resend login OTP API error: $errorMessage');
+        throw Exception(errorMessage);
+      }
+    } catch (e, st) {
+      Logger.e('Resend login OTP service failed', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  /// Resend signup OTP API call
+  Future<ResendSignUpOtpResponse> resendSignUpOtp({
+    required String tokenId,
+    required String reCaptchaToken,
+    String platform = 'android',
+  }) async {
+    try {
+      Logger.d('Starting resend signup OTP API call');
+      final platformName = Platform.isAndroid ? 'android' : 'ios';
+      Logger.d('Platform: $platformName');
+
+      final resendRequest = ResendSignUpOtpRequest(
+        tokenId: tokenId,
+        reCaptchaToken: reCaptchaToken,
+        platform: platformName,
+      );
+
+      Logger.api('Resend Signup OTP Request prepared', endpoint: ApiEndpoints.resendSignUpOtp, data: resendRequest.toJson(),);
+
+      final response = await _apiClient.postJson<Map<String, dynamic>>(
+        ApiEndpoints.resendSignUpOtp,
+        data: resendRequest.toJson(),
+      );
+
+      Logger.d('Resend signup OTP API response received with status: ${response.statusCode}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseData = response.data;
+        
+        if (responseData == null) {
+          throw Exception('Empty response received from resend signup OTP API');
+        }
+
+        final resendResponse = ResendSignUpOtpResponse.fromJson(responseData);
+        
+        Logger.d('Resend signup OTP response parsed successfully: $resendResponse');
+
+        if (resendResponse.tokenId.isNotEmpty) {
+          Logger.d('Updating signup token ID: ${resendResponse.tokenId}');
+          await _tokenStorageService.saveLoginTokens('', resendResponse.tokenId);
+          Logger.d('Signup token ID updated successfully');
+        } else {
+          Logger.w('Resend signup OTP response missing tokenId');
+          throw Exception('Invalid response: tokenId is empty');
+        }
+
+        return resendResponse;
+      } else {
+        String errorMessage = 'Resend signup OTP API failed with status: ${response.statusCode}';
+        
+        if (response.data is Map<String, dynamic>) {
+          final errorData = response.data as Map<String, dynamic>;
+          if (errorData.containsKey('error') && errorData['error'] != null) {
+            errorMessage = errorData['error'].toString();
+          }
+        }
+        
+        Logger.e('Resend signup OTP API error: $errorMessage');
+        throw Exception(errorMessage);
+      }
+    } catch (e, st) {
+      Logger.e('Resend signup OTP service failed', error: e, stackTrace: st);
       rethrow;
     }
   }

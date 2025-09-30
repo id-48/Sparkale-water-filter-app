@@ -86,7 +86,43 @@ class RecaptchaService {
     }
   }
 
+  Future<String> generateResendLoginOTPToken({String action = 'RESENDLOGINOTP'}) async {
+    try {
+      final String siteKey = Platform.isAndroid ? _androidSiteKey : _iosSiteKey;
 
+      final RecaptchaClient client = await Recaptcha.fetchClient(siteKey);
+
+      final String token = await client.execute(RecaptchaAction.custom(action));
+      if (token.isEmpty) {
+        throw Exception('Empty reCAPTCHA token');
+      }
+      Logger.i('Login verification reCAPTCHA token generated');
+      return token;
+    } catch (e, st) {
+      Logger.e('Login verification reCAPTCHA execute failed', error: e, stackTrace: st);
+      ToastService.error('Unable to verify reCAPTCHA');
+      rethrow;
+    }
+  }
+
+  Future<String> generateResendSignUpOTPToken({String action = 'RESENDSIGNUPOTP'}) async {
+    try {
+      final String siteKey = Platform.isAndroid ? _androidSiteKey : _iosSiteKey;
+
+      final RecaptchaClient client = await Recaptcha.fetchClient(siteKey);
+
+      final String token = await client.execute(RecaptchaAction.custom(action));
+      if (token.isEmpty) {
+        throw Exception('Empty reCAPTCHA token');
+      }
+      Logger.i('Resend signup OTP reCAPTCHA token generated');
+      return token;
+    } catch (e, st) {
+      Logger.e('Resend signup OTP reCAPTCHA execute failed', error: e, stackTrace: st);
+      ToastService.error('Unable to verify reCAPTCHA');
+      rethrow;
+    }
+  }
 }
 
 

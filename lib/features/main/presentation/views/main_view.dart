@@ -34,7 +34,7 @@ class MainView extends GetView<MainController> {
         vertical: 12,
       ),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: AppColors.textPrimary,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Obx(

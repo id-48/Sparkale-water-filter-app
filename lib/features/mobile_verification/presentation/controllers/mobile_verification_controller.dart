@@ -9,6 +9,7 @@ import '../../../../core/services/toast_service.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/token_storage_service.dart';
 import '../../../../core/services/clarity_service.dart';
+import '../../../../core/services/recaptcha_service.dart';
 
 class MobileVerificationController extends GetxController {
   final TextEditingController otpController = TextEditingController();
@@ -28,6 +29,7 @@ class MobileVerificationController extends GetxController {
 
   final AuthService _authService = AuthService();
   final TokenStorageService _tokenStorageService = TokenStorageService();
+  final RecaptchaService _recaptchaService = RecaptchaService();
 
   Timer? _resendTimer;
 
@@ -65,16 +67,14 @@ class MobileVerificationController extends GetxController {
   }
 
   void onOTPChanged(String value) {
-    print('your value is ===> ${value}');
     currentOTP.value = value;
   }
-  
-  // Get formatted mobile number with country code
+
   String get formattedMobileNumber {
     if (userMobile.value.isEmpty || userMobile.value == '+00******0000') {
       return '+00******0000';
     }
-    return '${countryCode.value}${userMobile.value}';
+    return '+${countryCode.value} ${userMobile.value}';
   }
 
   String _getOTP() {
@@ -236,14 +236,106 @@ class MobileVerificationController extends GetxController {
 
     try {
       isLoading.value = true;
-      await Future.delayed(const Duration(seconds: 1));
-      Logger.i('Mobile OTP resent successfully');
+      
+      if (flow.value == 'login') {
+        await _resendLoginOTP();
+        ClarityService.to.trackUserAction(ClarityConfig.eventLoginMobileResendOtp, properties: {
+          'status': 'resend_attempt',
+          'screen': 'email_verification',
+          'flow': flow.value
+        });
+      } else if (flow.value == 'register') {
+        await _resendSignUpOTP();
+        ClarityService.to.trackUserAction(ClarityConfig.eventSignUpMobileResendOtp, properties: {
+          'status': 'resend_attempt',
+          'screen': 'email_verification',
+          'flow': flow.value
+        });
+      } else {
+        await Future.delayed(const Duration(seconds: 1));
+        Logger.i('Mobile OTP resent successfully');
+      }
+      
       _startResendCountdown();
       _clearOTPFields();
     } catch (e) {
       Logger.e('Failed to resend mobile OTP', error: e);
+      final errorMessage = ApiErrorHandler.handleError(e);
+      ToastService.error(errorMessage);
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> _resendLoginOTP() async {
+    String loginTokenId = tokenId.value;
+    if (loginTokenId.isEmpty) {
+      final tokens = await _tokenStorageService.getLoginTokens();
+      loginTokenId = tokens['loginTokenId'] ?? '';
+    }
+
+    if (loginTokenId.isEmpty) {
+      ToastService.error('Login token not found. Please login again.');
+      return;
+    }
+
+    final platform = Platform.isAndroid ? 'android' : 'ios';
+    Logger.d('Platform: $platform');
+
+    Logger.d('Generating reCAPTCHA token for resend login OTP');
+    final reCaptchaToken = await _recaptchaService.generateResendLoginOTPToken();
+    Logger.d('reCAPTCHA token generated successfully');
+
+    Logger.d('Making resend login OTP API call');
+    final resendResponse = await _authService.resendLoginOtp(
+      loginTokenId: loginTokenId,
+      reCaptchaToken: reCaptchaToken,
+      platform: platform,
+    );
+
+    if (resendResponse.success) {
+      Logger.i('Mobile OTP resent successfully');
+      ToastService.success('OTP sent successfully');
+      
+      if (resendResponse.loginTokenId.isNotEmpty) {
+        tokenId.value = resendResponse.loginTokenId;
+      }
+    } else {
+      Logger.w('Resend mobile OTP failed: ${resendResponse.error}');
+      final errorMessage = resendResponse.error.isNotEmpty 
+          ? resendResponse.error 
+          : 'Failed to resend OTP. Please try again.';
+      ToastService.error(errorMessage);
+    }
+  }
+
+  Future<void> _resendSignUpOTP() async {
+    if (signupTokenId.value.isEmpty) {
+      ToastService.error('Signup token not found. Please try again.');
+      return;
+    }
+
+    final platform = Platform.isAndroid ? 'android' : 'ios';
+    Logger.d('Platform: $platform');
+
+    Logger.d('Generating reCAPTCHA token for resend signup OTP');
+    final reCaptchaToken = await _recaptchaService.generateResendSignUpOTPToken();
+    Logger.d('reCAPTCHA token generated successfully');
+
+    Logger.d('Making resend signup OTP API call');
+    final resendResponse = await _authService.resendSignUpOtp(
+      tokenId: signupTokenId.value,
+      reCaptchaToken: reCaptchaToken,
+      platform: platform,
+    );
+
+    if (resendResponse.tokenId.isNotEmpty) {
+      Logger.i('Mobile OTP resent successfully');
+      ToastService.success('OTP sent successfully');
+      signupTokenId.value = resendResponse.tokenId;
+    } else {
+      Logger.w('Resend mobile OTP failed: No tokenId in response');
+      ToastService.error('Failed to resend OTP. Please try again.');
     }
   }
 

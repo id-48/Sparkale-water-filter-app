@@ -52,6 +52,11 @@ class RegisterController extends GetxController {
     
     Logger.d('Country changed to: ${countryCode.name} (${countryCode.dialCode}) - Code: $newCountryCode, Flag: $newCountryFlag');
     Logger.i('Selected country code updated to: ${selectedCountryCode.value}');
+    
+    // Trigger form validation to update email field validation
+    if (_formKey.currentState != null) {
+      _formKey.currentState!.validate();
+    }
   }
   
   void toggleTermsAcceptance() {
@@ -246,13 +251,26 @@ class RegisterController extends GetxController {
   }
   
   String? validateEmail(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Email is required';
+    // If country code is +91, email is optional
+    if (selectedCountryCode.value == '+91') {
+      // Email is optional for +91, but if provided, it should be valid
+      if (value != null && value.trim().isNotEmpty) {
+        final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+        if (!emailRegex.hasMatch(value.trim())) {
+          return 'Please enter a valid email address';
+        }
+      }
+      return null;
+    } else {
+      // For non-+91 country codes, email is required
+      if (value == null || value.trim().isEmpty) {
+        return 'Email is required for non-Indian numbers';
+      }
+      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+      if (!emailRegex.hasMatch(value.trim())) {
+        return 'Please enter a valid email address';
+      }
+      return null;
     }
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value.trim())) {
-      return 'Please enter a valid email address';
-    }
-    return null;
   }
 }
